@@ -9,126 +9,150 @@ export interface HttpResponse<T = any> {
 }
 
 /**
- * Centralized request helper with automatic token refresh (refresh token rotation).
- * Uses localStorage keys:
- *  - 'topsmile_access_token' for short-lived JWT access token
- *  - 'topsmile_refresh_token' for refresh token string stored server-side
+ * Frontend HTTP helper with automatic access token refresh.
+ * - access token expected in localStorage under 'topsmile_access_token'
+ * - refresh token expected in localStorage under 'topsmile_refresh_token'
+ *
+ * Behavior:
+ * - Attaches Authorization: Bearer <accessToken> when `auth=true` (default).
+ * - On 401 responses, attempts to call POST /api/auth/refresh with { refreshToken }
+ * If refresh succeeds, stores new tokens and retries the original request once.
+ * - Prevents multiple concurrent refresh calls via a single promise queue.
+ * - Normalizes responses into HttpResponse<T> shape.
  */
+
+const ACCESS_KEY = 'topsmile_access_token';
+const REFRESH_KEY = 'topsmile_refresh_token';
+
+type RequestOptions = RequestInit & { auth?: boolean };
+
+/** Simple helper to parse fetch responses */
+async function parseResponse(res: Response): Promise<HttpResponse> {
+  const text = await res.text();
+  let payload: any = undefined;
+  if (text) {
+    try {
+      payload = JSON.parse(text);
+    } catch (e) {
+      // not JSON — keep raw text
+      payload = text;
+    }
+  }
+
+  const message = payload?.message || res.statusText;
+
+  if (!res.ok) {
+    return { ok: false, status: res.status, data: payload?.data, message };
+  }
+
+  return { ok: true, status: res.status, data: payload?.data, message };
+}
+
+/** Single refresh promise to avoid concurrent refresh calls */
+let refreshingPromise: Promise<void> | null = null;
+
+/** Perform token refresh using refresh token from localStorage */
+async function performRefresh(): Promise<void> {
+  const refreshToken = localStorage.getItem(REFRESH_KEY);
+  if (!refreshToken) throw new Error('No refresh token available');
+
+  const url = `${API_BASE_URL}/api/auth/refresh`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refreshToken })
+  });
+
+  // Reuse the existing helper to parse the response
+  const parsedResponse = await parseResponse(res);
+
+  if (!parsedResponse.ok) {
+    localStorage.removeItem(ACCESS_KEY);
+    localStorage.removeItem(REFRESH_KEY);
+    throw new Error(parsedResponse.message || 'Failed to refresh token');
+  }
+
+  const { data } = parsedResponse;
+  if (!data?.accessToken || !data?.refreshToken) {
+    throw new Error('Refresh response missing tokens');
+  }
+
+  localStorage.setItem(ACCESS_KEY, data.accessToken);
+  localStorage.setItem(REFRESH_KEY, data.refreshToken);
+}
+
+/** Public request function */
 export async function request<T = any>(
   endpoint: string,
-  options: RequestInit = {},
-  includeAuth = true,
-  signal?: AbortSignal
+  options: RequestOptions = {}
 ): Promise<HttpResponse<T>> {
-  const ACCESS_KEY = 'topsmile_access_token';
-  const REFRESH_KEY = 'topsmile_refresh_token';
+  // Destructure 'auth' from options with a default value for a cleaner API
+  const { auth = true, ...restOfOptions } = options;
 
-  let isRefreshing = false;
-  let failedQueue: Array<{ resolve: (value: any) => void; reject: (reason: any) => void; }> = [];
-
-  const processQueue = (error: any, token: string | null = null) => {
-    failedQueue.forEach(({ resolve, reject }) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(token);
-      }
-    });
-    failedQueue = [];
+  const mergedHeaders: HeadersInit = {
+    'Content-Type': 'application/json',
+    ...(restOfOptions.headers || {})
   };
 
-  const makeRequest = async (authToken?: string): Promise<HttpResponse<T>> => {
-    const token = authToken ?? (includeAuth ? (localStorage.getItem(ACCESS_KEY) || '') : '');
+  const makeRequest = async (token?: string | null) => {
+    // build headers fresh for each call to avoid mutation surprises
 
-    const defaultHeaders: Record<string, string> = {
-      'Content-Type': 'application/json',
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
-    };
+    // Initialize a new Headers object
+    const headers = new Headers(mergedHeaders);
 
-    const mergedHeaders = {
-      ...defaultHeaders,
-      ...(options.headers as Record<string, string> | undefined)
-    };
+    if (auth && token) {
+      // Use the .set() method to add or update a header
+      headers.set('Authorization', `Bearer ${token}`);
+    }
 
     const config: RequestInit = {
-      ...options,
-      headers: mergedHeaders,
-      signal: signal ?? (options.signal as AbortSignal | undefined)
+      ...restOfOptions,
+      headers,
+      // ensure GET requests don't accidentally send an empty body
+      body: restOfOptions.body ?? undefined
     };
 
     const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
     const res = await fetch(url, config);
-
-    const text = await res.text();
-    let payload: any = undefined;
-    if (text) {
-      try {
-        payload = JSON.parse(text);
-      } catch {
-        payload = { message: text };
-      }
-    }
-
-    if (!res.ok) {
-      const err = new Error(payload?.message || `HTTP ${res.status} ${res.statusText}`.trim());
-      (err as any).status = res.status;
-      (err as any).body = payload;
-      throw err;
-    }
-
-    return {
-      ok: res.ok,
-      status: res.status,
-      data: payload?.data ?? payload,
-      message: payload?.message
-    };
+    return res;
   };
 
   try {
-    return await makeRequest();
-  } catch (err: any) {
-    if (err?.status === 401 && includeAuth) {
-      if (isRefreshing) {
-        return new Promise((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        }).then((token) => makeRequest(token as string));
-      }
-
-      isRefreshing = true;
-      try {
-        const refreshToken = localStorage.getItem(REFRESH_KEY);
-        if (!refreshToken) {
-          throw new Error('No refresh token available');
-        }
-
-        const refreshRes = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refreshToken })
-        });
-
-        if (!refreshRes.ok) {
-          throw new Error('Token refresh failed');
-        }
-
-        const refreshData = await refreshRes.json();
-        const { accessToken, refreshToken: newRefreshToken } = refreshData.data ?? refreshData;
-
-        localStorage.setItem(ACCESS_KEY, accessToken);
-        localStorage.setItem(REFRESH_KEY, newRefreshToken);
-
-        processQueue(null, accessToken);
-        return await makeRequest(accessToken);
-      } catch (refreshError) {
-        processQueue(refreshError, null);
-        localStorage.removeItem(ACCESS_KEY);
-        localStorage.removeItem(REFRESH_KEY);
-        throw refreshError;
-      } finally {
-        isRefreshing = false;
-      }
+    const accessToken = localStorage.getItem(ACCESS_KEY);
+    const res = await makeRequest(accessToken);
+    if (res.status !== 401) {
+      // normal successful or other error — parse and return
+      return (await parseResponse(res)) as HttpResponse<T>;
     }
 
-    throw err;
+    // Got 401 — try refresh flow
+    // If a refresh is already in progress, await it instead of creating a new one
+    if (!refreshingPromise) {
+      refreshingPromise = performRefresh()
+        .catch((err) => {
+          // Ensure the promise is cleared on failure to allow future retries
+          refreshingPromise = null;
+          throw err; // Re-throw to propagate the error
+        })
+        .finally(() => {
+          // Clear the promise once it's settled (either resolved or rejected)
+          refreshingPromise = null;
+        });
+    }
+
+    await refreshingPromise;
+
+    // Retry original request with new access token
+    const newAccess = localStorage.getItem(ACCESS_KEY);
+    const retryRes = await makeRequest(newAccess);
+    return (await parseResponse(retryRes)) as HttpResponse<T>;
+  } catch (err: any) {
+    // Re-throw the original Error object to preserve specific error messages
+    if (err instanceof Error) {
+      throw err;
+    }
+
+    // Fallback for non-Error exceptions
+    throw new Error('An unknown network error occurred');
   }
 }

@@ -1,145 +1,127 @@
-// src/contexts/AuthContext.tsx
-import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { request } from '../services/http';
-import type { User } from '../types/api';
 
-type AuthContextType = {
-  user: User | null;
-  loading: boolean;        // original internal loading
-  isLoading: boolean;      // alias used across components
+const ACCESS_KEY = 'topsmile_access_token';
+const REFRESH_KEY = 'topsmile_refresh_token';
+
+interface AuthResult {
+  success: boolean;
+  message?: string;
+}
+
+interface AuthContextType {
   isAuthenticated: boolean;
-  error: string | null;
-  clearError: () => void;
-  login: (email: string, password: string) => Promise<void>;
-  register: (payload: { name: string; email: string; password: string }) => Promise<void>;
-  logout: () => void;
-  refreshUser: () => Promise<void>;
-};
+  accessToken: string | null;
+  loading: boolean; // Expose loading state
+  login: (email: string, password: string) => Promise<AuthResult>;
+  logout: (reason?: string) => void;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const ACCESS_TOKEN_KEY = 'topsmile_access_token';
-const REFRESH_TOKEN_KEY = 'topsmile_refresh_token';
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const navigate = useNavigate();
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true); // Add loading state
+  const [logoutReason, setLogoutReason] = useState<string | null>(null);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const isAuthenticated = !loading && !!accessToken;
 
-  // Load user if token present
+  // Verify token on initial load
   useEffect(() => {
-    let mounted = true;
-    const controller = new AbortController();
-
-    const load = async () => {
+    const verifyAuth = async () => {
+      const token = localStorage.getItem(ACCESS_KEY);
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+      // Assuming a lightweight endpoint to validate the token
       try {
-        const token = localStorage.getItem(ACCESS_TOKEN_KEY);
-        if (!token) {
-          if (mounted) setLoading(false);
-          return;
-        }
-
-        const profile = await request('/api/auth/me', { method: 'GET' }, true);
-        if (mounted) {
-          setUser(profile.data ?? null);
+        const res = await request('/api/auth/me', { method: 'GET' });
+        if (res.ok) {
+          setAccessToken(token);
+        } else {
+          // This will trigger the refresh flow in http.ts, if it also fails,
+          // the storage event or a thrown error will handle the logout.
+          localStorage.removeItem(ACCESS_KEY);
+          localStorage.removeItem(REFRESH_KEY);
         }
       } catch (err) {
-        // If we can't load user, clear tokens
-        localStorage.removeItem(ACCESS_TOKEN_KEY);
-        localStorage.removeItem(REFRESH_TOKEN_KEY);
+        // If the refresh logic itself fails, tokens are cleared by http.ts
+        console.error('Initial auth check failed', err);
       } finally {
-        if (mounted) setLoading(false);
+        setLoading(false);
       }
     };
-
-    load();
-
-    return () => {
-      mounted = false;
-      controller.abort();
-    };
+    verifyAuth();
   }, []);
 
-  const clearError = () => setError(null);
-
-  const login = async (email: string, password: string) => {
-    setLoading(true);
-    setError(null);
+  const login = async (email: string, password: string): Promise<AuthResult> => {
     try {
       const res = await request('/api/auth/login', {
         method: 'POST',
-        body: JSON.stringify({ email, password })
-      }, false);
-      const accessToken = res.data?.accessToken;
-      const refreshToken = res.data?.refreshToken;
-      if (!accessToken || !refreshToken) throw new Error(res.message || 'No tokens returned');
-      localStorage.setItem(ACCESS_TOKEN_KEY, accessToken);
-      localStorage.setItem(REFRESH_TOKEN_KEY, refreshToken);
+        body: JSON.stringify({ email, password }),
+        auth: false, // Explicitly unauthenticated
+      });
 
-      // fetch profile
-      const profile = await request('/api/auth/me', { method: 'GET' }, true);
-      setUser(profile.data ?? null);
+      if (res.ok && res.data) {
+        localStorage.setItem(ACCESS_KEY, res.data.accessToken);
+        localStorage.setItem(REFRESH_KEY, res.data.refreshToken);
+        setAccessToken(res.data.accessToken);
+        setLogoutReason(null);
+        navigate('/dashboard');
+        return { success: true };
+      } else {
+        return { success: false, message: res.message || 'An unknown error occurred' };
+      }
     } catch (err: any) {
-      setError(err?.message ?? 'Erro ao autenticar');
-      throw err;
-    } finally {
-      setLoading(false);
+      return { success: false, message: err.message || 'Network error' };
     }
   };
 
-  const register = async (payload: { name: string; email: string; password: string }) => {
-    setLoading(true);
-    setError(null);
-    try {
-      await request('/api/auth/register', {
-        method: 'POST',
-        body: JSON.stringify(payload)
-      }, false);
-    } catch (err: any) {
-      setError(err?.message ?? 'Erro ao cadastrar');
-      throw err;
-    } finally {
-      setLoading(false);
+  const logout = (reason?: string) => {
+    localStorage.removeItem(ACCESS_KEY);
+    localStorage.removeItem(REFRESH_KEY);
+    setAccessToken(null);
+    if (reason) {
+      setLogoutReason(reason);
     }
+    navigate('/login');
   };
 
-  const logout = () => {
-    localStorage.removeItem(ACCESS_TOKEN_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
-    setUser(null);
-  };
+  // Sync auth state across tabs
+  useEffect(() => {
+    const onStorageChange = (e: StorageEvent) => {
+      if (e.key === ACCESS_KEY && e.newValue === null) {
+        logout('Your session has expired. Please log in again.');
+      }
+    };
+    window.addEventListener('storage', onStorageChange);
+    return () => window.removeEventListener('storage', onStorageChange);
+  }, []);
 
-  const refreshUser = async () => {
-    try {
-      const profile = await request('/api/auth/me', { method: 'GET' }, true);
-      setUser(profile.data ?? null);
-    } catch (err) {
-      setUser(null);
-      localStorage.removeItem(ACCESS_TOKEN_KEY);
-      localStorage.removeItem(REFRESH_TOKEN_KEY);
+  // Show reason for logout after redirect
+  useEffect(() => {
+    if (logoutReason) {
+      alert(logoutReason);
+      setLogoutReason(null);
     }
-  };
+  }, [logoutReason]);
 
-  const value = useMemo(() => ({
-    user,
-    loading,
-    isLoading: loading,
-    isAuthenticated: !!user,
-    error,
-    clearError,
-    login,
-    register,
-    logout,
-    refreshUser
-  }), [user, loading, error]);
+  const value = { isAuthenticated, accessToken, loading, login, logout };
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
 };
 
-export const useAuth = () => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) {
-    throw new Error('useAuth must be used inside AuthProvider');
+export const useAuth = (): AuthContextType => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
   }
-  return ctx;
+  return context;
 };
