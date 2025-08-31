@@ -1,0 +1,21 @@
+.testimonials-section {
+  padding: 4rem 2rem;
+  background-color: #f1f5f9;
+}
+
+.testimonials-title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 2.5rem;
+  text-align: center;
+}
+
+.slick-dots li button:before {
+  color: #4a90e2;
+  font-size: 12px;
+}
+
+.slick-dots li.slick-active button:before {
+  color: #0f172a;
+}

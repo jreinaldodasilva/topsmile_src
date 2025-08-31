@@ -1,0 +1,12 @@
+:root {
+    --color-primary: #0ea5e9;
+    --color-secondary: #f1f5f9;
+    --color-dark: #1e293b;
+    --color-light: #ffffff;
+    --color-text: #475569;
+  
+    --font-primary: 'Inter', sans-serif;
+  
+    --max-width: 1140px;
+  }
+   
