@@ -1,0 +1,730 @@
+// backend/src/routes/providers.ts
+import express from 'express';
+import { authenticate, authorize, AuthenticatedRequest } from '../middleware/auth';
+import { providerService } from '../services/providerService';
+import { body, query, validationResult } from 'express-validator';
+
+const router = express.Router();
+
+// All provider routes require authentication
+router.use(authenticate);
+
+// Validation rules for creating providers
+const createProviderValidation = [
+    body('name')
+        .trim()
+        .isLength({ min: 2, max: 100 })
+        .withMessage('Nome deve ter entre 2 e 100 caracteres'),
+    
+    body('email')
+        .optional()
+        .isEmail()
+        .normalizeEmail()
+        .withMessage('E-mail inválido'),
+    
+    body('phone')
+        .optional()
+        .trim()
+        .isLength({ min: 10, max: 15 })
+        .withMessage('Telefone deve ter entre 10 e 15 caracteres'),
+    
+    body('specialties')
+        .isArray({ min: 1 })
+        .withMessage('Pelo menos uma especialidade é obrigatória'),
+    
+    body('specialties.*')
+        .isIn([
+            'general_dentistry',
+            'orthodontics', 
+            'oral_surgery',
+            'periodontics',
+            'endodontics',
+            'prosthodontics',
+            'pediatric_dentistry',
+            'oral_pathology',
+            'dental_hygiene'
+        ])
+        .withMessage('Especialidade inválida'),
+    
+    body('licenseNumber')
+        .optional()
+        .trim()
+        .isLength({ min: 1, max: 50 })
+        .withMessage('Número da licença deve ter entre 1 e 50 caracteres'),
+    
+    body('timeZone')
+        .optional()
+        .isString()
+        .withMessage('Fuso horário inválido'),
+    
+    body('bufferTimeBefore')
+        .optional()
+        .isInt({ min: 0, max: 60 })
+        .withMessage('Tempo de intervalo antes deve ser entre 0 e 60 minutos'),
+    
+    body('bufferTimeAfter')
+        .optional()
+        .isInt({ min: 0, max: 60 })
+        .withMessage('Tempo de intervalo depois deve ser entre 0 e 60 minutos'),
+    
+    body('userId')
+        .optional()
+        .isMongoId()
+        .withMessage('ID do usuário inválido'),
+    
+    body('appointmentTypes')
+        .optional()
+        .isArray()
+        .withMessage('Tipos de agendamento deve ser um array'),
+    
+    body('appointmentTypes.*')
+        .optional()
+        .isMongoId()
+        .withMessage('ID de tipo de agendamento inválido'),
+    
+    // Working hours validation
+    body('workingHours.*.start')
+        .optional()
+        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+        .withMessage('Formato de horário inválido. Use HH:MM'),
+    
+    body('workingHours.*.end')
+        .optional()
+        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+        .withMessage('Formato de horário inválido. Use HH:MM'),
+    
+    body('workingHours.*.isWorking')
+        .optional()
+        .isBoolean()
+        .withMessage('isWorking deve ser verdadeiro ou falso')
+];
+
+// Validation rules for updating providers
+const updateProviderValidation = [
+    body('name')
+        .optional()
+        .trim()
+        .isLength({ min: 2, max: 100 })
+        .withMessage('Nome deve ter entre 2 e 100 caracteres'),
+    
+    body('email')
+        .optional()
+        .isEmail()
+        .normalizeEmail()
+        .withMessage('E-mail inválido'),
+    
+    body('phone')
+        .optional()
+        .trim()
+        .isLength({ min: 10, max: 15 })
+        .withMessage('Telefone deve ter entre 10 e 15 caracteres'),
+    
+    body('specialties')
+        .optional()
+        .isArray({ min: 1 })
+        .withMessage('Pelo menos uma especialidade é obrigatória'),
+    
+    body('specialties.*')
+        .optional()
+        .isIn([
+            'general_dentistry',
+            'orthodontics', 
+            'oral_surgery',
+            'periodontics',
+            'endodontics',
+            'prosthodontics',
+            'pediatric_dentistry',
+            'oral_pathology',
+            'dental_hygiene'
+        ])
+        .withMessage('Especialidade inválida'),
+    
+    body('licenseNumber')
+        .optional()
+        .trim()
+        .isLength({ min: 1, max: 50 })
+        .withMessage('Número da licença deve ter entre 1 e 50 caracteres'),
+    
+    body('isActive')
+        .optional()
+        .isBoolean()
+        .withMessage('Status ativo deve ser verdadeiro ou falso'),
+    
+    body('timeZone')
+        .optional()
+        .isString()
+        .withMessage('Fuso horário inválido'),
+    
+    body('bufferTimeBefore')
+        .optional()
+        .isInt({ min: 0, max: 60 })
+        .withMessage('Tempo de intervalo antes deve ser entre 0 e 60 minutos'),
+    
+    body('bufferTimeAfter')
+        .optional()
+        .isInt({ min: 0, max: 60 })
+        .withMessage('Tempo de intervalo depois deve ser entre 0 e 60 minutos'),
+    
+    body('userId')
+        .optional()
+        .isMongoId()
+        .withMessage('ID do usuário inválido'),
+    
+    body('appointmentTypes')
+        .optional()
+        .isArray()
+        .withMessage('Tipos de agendamento deve ser um array'),
+    
+    body('appointmentTypes.*')
+        .optional()
+        .isMongoId()
+        .withMessage('ID de tipo de agendamento inválido'),
+    
+    // Working hours validation
+    body('workingHours.*.start')
+        .optional()
+        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+        .withMessage('Formato de horário inválido. Use HH:MM'),
+    
+    body('workingHours.*.end')
+        .optional()
+        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+        .withMessage('Formato de horário inválido. Use HH:MM'),
+    
+    body('workingHours.*.isWorking')
+        .optional()
+        .isBoolean()
+        .withMessage('isWorking deve ser verdadeiro ou falso')
+];
+
+// Search validation
+const searchValidation = [
+    query('search')
+        .optional()
+        .trim()
+        .isLength({ min: 1, max: 100 })
+        .withMessage('Busca deve ter entre 1 e 100 caracteres'),
+    
+    query('isActive')
+        .optional()
+        .isBoolean()
+        .withMessage('Status ativo inválido'),
+    
+    query('specialties')
+        .optional()
+        .custom((value) => {
+            if (typeof value === 'string') {
+                return true; // Single specialty
+            }
+            if (Array.isArray(value)) {
+                return value.every(s => typeof s === 'string'); // Array of specialties
+            }
+            return false;
+        })
+        .withMessage('Especialidades inválidas'),
+    
+    query('page')
+        .optional()
+        .isInt({ min: 1 })
+        .withMessage('Página deve ser um número inteiro maior que 0'),
+    
+    query('limit')
+        .optional()
+        .isInt({ min: 1, max: 100 })
+        .withMessage('Limite deve ser um número inteiro entre 1 e 100'),
+    
+    query('sortBy')
+        .optional()
+        .isIn(['name', 'email', 'createdAt', 'updatedAt'])
+        .withMessage('Campo de ordenação inválido'),
+    
+    query('sortOrder')
+        .optional()
+        .isIn(['asc', 'desc'])
+        .withMessage('Ordem de classificação inválida')
+];
+
+// Working hours validation
+const workingHoursValidation = [
+    body('monday.start')
+        .optional()
+        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+        .withMessage('Formato de horário inválido para segunda-feira'),
+    
+    body('monday.end')
+        .optional()
+        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+        .withMessage('Formato de horário inválido para segunda-feira'),
+    
+    body('monday.isWorking')
+        .isBoolean()
+        .withMessage('Status de trabalho para segunda-feira deve ser verdadeiro ou falso'),
+    
+    // Repeat for other days...
+    body('tuesday.start')
+        .optional()
+        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+        .withMessage('Formato de horário inválido para terça-feira'),
+    
+    body('tuesday.end')
+        .optional()
+        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+        .withMessage('Formato de horário inválido para terça-feira'),
+    
+    body('tuesday.isWorking')
+        .isBoolean()
+        .withMessage('Status de trabalho para terça-feira deve ser verdadeiro ou falso'),
+    
+    body('wednesday.start')
+        .optional()
+        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+        .withMessage('Formato de horário inválido para quarta-feira'),
+    
+    body('wednesday.end')
+        .optional()
+        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+        .withMessage('Formato de horário inválido para quarta-feira'),
+    
+    body('wednesday.isWorking')
+        .isBoolean()
+        .withMessage('Status de trabalho para quarta-feira deve ser verdadeiro ou falso'),
+    
+    body('thursday.start')
+        .optional()
+        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+        .withMessage('Formato de horário inválido para quinta-feira'),
+    
+    body('thursday.end')
+        .optional()
+        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+        .withMessage('Formato de horário inválido para quinta-feira'),
+    
+    body('thursday.isWorking')
+        .isBoolean()
+        .withMessage('Status de trabalho para quinta-feira deve ser verdadeiro ou falso'),
+    
+    body('friday.start')
+        .optional()
+        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+        .withMessage('Formato de horário inválido para sexta-feira'),
+    
+    body('friday.end')
+        .optional()
+        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+        .withMessage('Formato de horário inválido para sexta-feira'),
+    
+    body('friday.isWorking')
+        .isBoolean()
+        .withMessage('Status de trabalho para sexta-feira deve ser verdadeiro ou falso'),
+    
+    body('saturday.start')
+        .optional()
+        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+        .withMessage('Formato de horário inválido para sábado'),
+    
+    body('saturday.end')
+        .optional()
+        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+        .withMessage('Formato de horário inválido para sábado'),
+    
+    body('saturday.isWorking')
+        .isBoolean()
+        .withMessage('Status de trabalho para sábado deve ser verdadeiro ou falso'),
+    
+    body('sunday.start')
+        .optional()
+        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+        .withMessage('Formato de horário inválido para domingo'),
+    
+    body('sunday.end')
+        .optional()
+        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
+        .withMessage('Formato de horário inválido para domingo'),
+    
+    body('sunday.isWorking')
+        .isBoolean()
+        .withMessage('Status de trabalho para domingo deve ser verdadeiro ou falso')
+];
+
+// Create a new provider
+router.post('/', 
+    authorize('super_admin', 'admin', 'manager'),
+    createProviderValidation, 
+    async (req: AuthenticatedRequest, res: any) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Dados inválidos',
+                    errors: errors.array()
+                });
+            }
+
+            if (!req.user?.clinicId) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Clínica não identificada'
+                });
+            }
+
+            const providerData = {
+                ...req.body,
+                clinicId: req.user.clinicId
+            };
+
+            const provider = await providerService.createProvider(providerData);
+
+            return res.status(201).json({
+                success: true,
+                message: 'Profissional criado com sucesso',
+                data: provider
+            });
+        } catch (error: any) {
+            console.error('Error creating provider:', error);
+            return res.status(400).json({
+                success: false,
+                message: error.message || 'Erro ao criar profissional'
+            });
+        }
+    }
+);
+
+// Get all providers with search and pagination
+router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Parâmetros inválidos',
+                errors: errors.array()
+            });
+        }
+
+        if (!req.user?.clinicId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Clínica não identificada'
+            });
+        }
+
+        // Handle specialties parameter (can be string or array)
+        let specialties: string[] | undefined;
+        if (req.query.specialties) {
+            if (typeof req.query.specialties === 'string') {
+                specialties = [req.query.specialties];
+            } else if (Array.isArray(req.query.specialties)) {
+                specialties = req.query.specialties as string[];
+            }
+        }
+
+        const filters = {
+            clinicId: req.user.clinicId,
+            search: req.query.search as string,
+            isActive: req.query.isActive === 'false' ? false : true,
+            specialties,
+            page: parseInt(req.query.page as string) || 1,
+            limit: parseInt(req.query.limit as string) || 20,
+            sortBy: req.query.sortBy as string || 'name',
+            sortOrder: req.query.sortOrder as 'asc' | 'desc' || 'asc'
+        };
+
+        const result = await providerService.searchProviders(filters);
+
+        return res.json({
+            success: true,
+            data: result
+        });
+    } catch (error: any) {
+        console.error('Error searching providers:', error);
+        return res.status(500).json({
+            success: false,
+            message: error.message || 'Erro ao buscar profissionais'
+        });
+    }
+});
+
+// Get provider statistics
+router.get('/stats', 
+    authorize('super_admin', 'admin', 'manager'),
+    async (req: AuthenticatedRequest, res) => {
+        try {
+            if (!req.user?.clinicId) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Clínica não identificada'
+                });
+            }
+
+            const stats = await providerService.getProviderStats(req.user.clinicId);
+
+            return res.json({
+                success: true,
+                data: stats
+            });
+        } catch (error: any) {
+            console.error('Error getting provider stats:', error);
+            return res.status(500).json({
+                success: false,
+                message: error.message || 'Erro ao buscar estatísticas de profissionais'
+            });
+        }
+    }
+);
+
+// Get specific provider by ID
+router.get('/:id', async (req: AuthenticatedRequest, res) => {
+    try {
+        if (!req.user?.clinicId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Clínica não identificada'
+            });
+        }
+
+        const provider = await providerService.getProviderById(req.params.id, req.user.clinicId);
+
+        if (!provider) {
+            return res.status(404).json({
+                success: false,
+                message: 'Profissional não encontrado'
+            });
+        }
+
+        return res.json({
+            success: true,
+            data: provider
+        });
+    } catch (error: any) {
+        console.error('Error getting provider:', error);
+        return res.status(500).json({
+            success: false,
+            message: error.message || 'Erro ao buscar profissional'
+        });
+    }
+});
+
+// Update provider
+router.patch('/:id', 
+    authorize('super_admin', 'admin', 'manager'),
+    updateProviderValidation, 
+    async (req: AuthenticatedRequest, res: any) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Dados inválidos',
+                    errors: errors.array()
+                });
+            }
+
+            if (!req.user?.clinicId) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Clínica não identificada'
+                });
+            }
+
+            const provider = await providerService.updateProvider(
+                req.params.id,
+                req.user.clinicId,
+                req.body
+            );
+
+            if (!provider) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Profissional não encontrado'
+                });
+            }
+
+            return res.json({
+                success: true,
+                message: 'Profissional atualizado com sucesso',
+                data: provider
+            });
+        } catch (error: any) {
+            console.error('Error updating provider:', error);
+            return res.status(400).json({
+                success: false,
+                message: error.message || 'Erro ao atualizar profissional'
+            });
+        }
+    }
+);
+
+// Update working hours
+router.patch('/:id/working-hours', 
+    authorize('super_admin', 'admin', 'manager'),
+    workingHoursValidation,
+    async (req: AuthenticatedRequest, res: any) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Dados inválidos',
+                    errors: errors.array()
+                });
+            }
+
+            if (!req.user?.clinicId) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Clínica não identificada'
+                });
+            }
+
+            const provider = await providerService.updateWorkingHours(
+                req.params.id,
+                req.user.clinicId,
+                req.body
+            );
+
+            if (!provider) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Profissional não encontrado'
+                });
+            }
+
+            return res.json({
+                success: true,
+                message: 'Horários de trabalho atualizados com sucesso',
+                data: provider
+            });
+        } catch (error: any) {
+            console.error('Error updating working hours:', error);
+            return res.status(400).json({
+                success: false,
+                message: error.message || 'Erro ao atualizar horários de trabalho'
+            });
+        }
+    }
+);
+
+// Update appointment types
+router.patch('/:id/appointment-types',
+    authorize('super_admin', 'admin', 'manager'),
+    body('appointmentTypes').isArray().withMessage('Tipos de agendamento deve ser um array'),
+    body('appointmentTypes.*').isMongoId().withMessage('ID de tipo de agendamento inválido'),
+    async (req: AuthenticatedRequest, res) => {
+        try {
+            const errors = validationResult(req);
+            if (!errors.isEmpty()) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Dados inválidos',
+                    errors: errors.array()
+                });
+            }
+
+            if (!req.user?.clinicId) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Clínica não identificada'
+                });
+            }
+
+            const provider = await providerService.updateAppointmentTypes(
+                req.params.id,
+                req.user.clinicId,
+                req.body.appointmentTypes
+            );
+
+            if (!provider) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Profissional não encontrado'
+                });
+            }
+
+            return res.json({
+                success: true,
+                message: 'Tipos de agendamento atualizados com sucesso',
+                data: provider
+            });
+        } catch (error: any) {
+            console.error('Error updating appointment types:', error);
+            return res.status(400).json({
+                success: false,
+                message: error.message || 'Erro ao atualizar tipos de agendamento'
+            });
+        }
+    }
+);
+
+// Reactivate provider
+router.patch('/:id/reactivate', 
+    authorize('super_admin', 'admin', 'manager'),
+    async (req: AuthenticatedRequest, res) => {
+        try {
+            if (!req.user?.clinicId) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Clínica não identificada'
+                });
+            }
+
+            const provider = await providerService.reactivateProvider(req.params.id, req.user.clinicId);
+
+            if (!provider) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Profissional inativo não encontrado'
+                });
+            }
+
+            return res.json({
+                success: true,
+                message: 'Profissional reativado com sucesso',
+                data: provider
+            });
+        } catch (error: any) {
+            console.error('Error reactivating provider:', error);
+            return res.status(400).json({
+                success: false,
+                message: error.message || 'Erro ao reativar profissional'
+            });
+        }
+    }
+);
+
+// Delete provider (soft delete)
+router.delete('/:id', 
+    authorize('super_admin', 'admin'),
+    async (req: AuthenticatedRequest, res) => {
+        try {
+            if (!req.user?.clinicId) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Clínica não identificada'
+                });
+            }
+
+            const success = await providerService.deleteProvider(req.params.id, req.user.clinicId);
+
+            if (!success) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Profissional não encontrado'
+                });
+            }
+
+            return res.json({
+                success: true,
+                message: 'Profissional excluído com sucesso'
+            });
+        } catch (error: any) {
+            console.error('Error deleting provider:', error);
+            return res.status(500).json({
+                success: false,
+                message: error.message || 'Erro ao excluir profissional'
+            });
+        }
+    }
+);
+
+export default router;

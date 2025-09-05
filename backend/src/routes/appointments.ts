@@ -82,7 +82,45 @@ const bookingValidation = [
     .withMessage('Prioridade inválida')
 ];
 
-// Book a new appointment
+// Create a new appointment (standard CRUD endpoint)
+router.post("/", bookingValidation, async (req: AuthenticatedRequest, res: any) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Dados inválidos',
+        errors: errors.array()
+      });
+    }
+
+    const { patientId, providerId, appointmentTypeId, scheduledStart, notes, priority } = req.body;
+
+    const appointment = await schedulingService.createAppointment({
+      clinicId: req.user!.clinicId!,
+      patientId,
+      providerId,
+      appointmentTypeId,
+      scheduledStart: new Date(scheduledStart),
+      notes,
+      priority,
+      createdBy: req.user!.id
+    });
+
+    return res.status(201).json({ 
+      success: true, 
+      data: appointment 
+    });
+  } catch (err: any) {
+    console.error("Appointment creation error:", err);
+    return res.status(400).json({ 
+      success: false, 
+      error: err.message 
+    });
+  }
+});
+
+// Book a new appointment (legacy endpoint)
 router.post("/book", bookingValidation, async (req: AuthenticatedRequest, res: any) => {
   try {
     const errors = validationResult(req);
@@ -194,6 +232,72 @@ router.get("/:id", async (req: AuthenticatedRequest, res) => {
   } catch (err: any) {
     console.error("Error fetching appointment:", err);
     return res.status(500).json({
+      success: false,
+      error: err.message
+    });
+  }
+});
+
+// Update appointment (general update endpoint)
+router.patch("/:id", bookingValidation.map(validation => validation.optional()), async (req: AuthenticatedRequest, res: any) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Dados inválidos',
+        errors: errors.array()
+      });
+    }
+
+    const appointment = await Appointment.findById(req.params.id);
+    if (!appointment) {
+      return res.status(404).json({
+        success: false,
+        message: 'Agendamento não encontrado'
+      });
+    }
+
+    // Check clinic access
+    if (appointment.clinic.toString() !== req.user!.clinicId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Acesso negado'
+      });
+    }
+
+    // Update fields
+    const updateFields = ['patientId', 'providerId', 'appointmentTypeId', 'scheduledStart', 'scheduledEnd', 'status', 'priority', 'notes'];
+    updateFields.forEach(field => {
+      if (req.body[field] !== undefined) {
+        if (field === 'scheduledStart' || field === 'scheduledEnd') {
+          (appointment as any)[field] = new Date(req.body[field]);
+        } else if (field === 'patientId') {
+          appointment.patient = req.body[field];
+        } else if (field === 'providerId') {
+          appointment.provider = req.body[field];
+        } else if (field === 'appointmentTypeId') {
+          appointment.appointmentType = req.body[field];
+        } else {
+          (appointment as any)[field] = req.body[field];
+        }
+      }
+    });
+
+    const updatedAppointment = await appointment.save();
+    await updatedAppointment.populate([
+      { path: 'patient', select: 'name phone email' },
+      { path: 'provider', select: 'name specialties' },
+      { path: 'appointmentType', select: 'name duration color category' }
+    ]);
+
+    return res.json({
+      success: true,
+      data: updatedAppointment
+    });
+  } catch (err: any) {
+    console.error("Error updating appointment:", err);
+    return res.status(400).json({
       success: false,
       error: err.message
     });
