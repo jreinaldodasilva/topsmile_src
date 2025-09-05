@@ -8,7 +8,7 @@ Thoroughly and meticulously analyze the project code. Take your time; I want a t
 
 Thoroughly and meticulously analyze the project code. Take your time; I want a thorough analysis. When there are implementations to be made, let's do them one at a time so that I can verify one implementation before moving on to another. Split your answer to avoid exceeding the allowed size limit. Before we begin, I need to upload all the front-end and back-end source code. Once I have done so, I will instruct you to begin.
 
-Thoroughly and meticulously analyze the project's backend code using the GitHub links below. Focus on the logic, inconsistencies, and missing code. Take your time; I want a thorough analysis. Do not implement anything at this time.
+Thoroughly and meticulously analyze the project's frontend code using the GitHub links below. Focus on UX/UI. Take your time; I want a thorough analysis.
 ### Backend Source Code
 * [app.ts](https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/app.ts)
 * [config/database.ts](https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/backend/src/config/database.ts)
@@ -140,7 +140,7 @@ Thoroughly and meticulously analyze the project's frontend code using the GitHub
 
 
 
-
+Thoroughly and meticulously analyze the project's frontend code using the GitHub links below. Focus on UX/UI improvements. 
 * [App.tsx](https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/App.tsx)
 * [components/Admin/Contacts/ContactList.tsx](https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/Admin/Contacts/ContactList.tsx)
 * [components/Admin/Dashboard/Dashboard.tsx](https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/Admin/Dashboard/Dashboard.tsx)
@@ -179,8 +179,6 @@ Thoroughly and meticulously analyze the project's frontend code using the GitHub
 * [pages/Login/RegisterPage.tsx](https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/pages/Login/RegisterPage.tsx)
 * [pages/Pricing/PricingPage.tsx](https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/pages/Pricing/PricingPage.tsx)
 * [pages/Unauthorized/UnauthorizedPage.tsx](https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/pages/Unauthorized/UnauthorizedPage.tsx)
-
-### Frontend Source Code (CSS files)
 * [App.css](https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/App.css)
 * [components/Admin/Contacts/ContactList.css](https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/Admin/Contacts/ContactList.css)
 * [components/Admin/Dashboard/Dashboard.css](https://raw.githubusercontent.com/jreinaldodasilva/topsmile/main/src/components/Admin/Dashboard/Dashboard.css)
