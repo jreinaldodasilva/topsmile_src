@@ -1,0 +1,690 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="227" failures="33" errors="0" time="274.806">
+  <testsuite name="ProviderService" errors="0" failures="4" skipped="0" timestamp="2025-09-13T01:22:45" time="52.118" tests="42">
+    <testcase classname="ProviderService createProvider should create a new provider successfully" name="ProviderService createProvider should create a new provider successfully" time="4.441">
+    </testcase>
+    <testcase classname="ProviderService createProvider should create provider with default working hours" name="ProviderService createProvider should create provider with default working hours" time="0.722">
+    </testcase>
+    <testcase classname="ProviderService createProvider should create provider with custom working hours" name="ProviderService createProvider should create provider with custom working hours" time="0.693">
+    </testcase>
+    <testcase classname="ProviderService createProvider should create provider linked to user account" name="ProviderService createProvider should create provider linked to user account" time="0.531">
+    </testcase>
+    <testcase classname="ProviderService createProvider should create provider with appointment types" name="ProviderService createProvider should create provider with appointment types" time="0.5">
+    </testcase>
+    <testcase classname="ProviderService createProvider should throw error for duplicate email in same clinic" name="ProviderService createProvider should throw error for duplicate email in same clinic" time="0.556">
+    </testcase>
+    <testcase classname="ProviderService createProvider should throw error for invalid clinic ID" name="ProviderService createProvider should throw error for invalid clinic ID" time="0.477">
+    </testcase>
+    <testcase classname="ProviderService createProvider should throw error for missing required fields" name="ProviderService createProvider should throw error for missing required fields" time="0.481">
+    </testcase>
+    <testcase classname="ProviderService createProvider should throw error for user from different clinic" name="ProviderService createProvider should throw error for user from different clinic" time="0.939">
+      <failure>MongoServerError: E11000 duplicate key error collection: test.users index: email_1 dup key: { email: &quot;test@example.com&quot; }
+    at InsertOneOperation.execute (/home/rebelde/development/topsmile/backend/node_modules/mongodb/src/operations/insert.ts:88:13)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at tryOperation (/home/rebelde/development/topsmile/backend/node_modules/mongodb/src/operations/execute_operation.ts:283:14)
+    at executeOperation (/home/rebelde/development/topsmile/backend/node_modules/mongodb/src/operations/execute_operation.ts:115:12)
+    at Collection.insertOne (/home/rebelde/development/topsmile/backend/node_modules/mongodb/src/collection.ts:286:12)</failure>
+    </testcase>
+    <testcase classname="ProviderService createProvider should throw error for user already linked to another provider" name="ProviderService createProvider should throw error for user already linked to another provider" time="0.53">
+    </testcase>
+    <testcase classname="ProviderService getProviderById should return provider by ID with populated fields" name="ProviderService getProviderById should return provider by ID with populated fields" time="0.521">
+    </testcase>
+    <testcase classname="ProviderService getProviderById should return null for non-existent provider" name="ProviderService getProviderById should return null for non-existent provider" time="0.51">
+    </testcase>
+    <testcase classname="ProviderService getProviderById should throw error for invalid provider ID" name="ProviderService getProviderById should throw error for invalid provider ID" time="0.497">
+    </testcase>
+    <testcase classname="ProviderService updateProvider should update provider successfully" name="ProviderService updateProvider should update provider successfully" time="0.604">
+    </testcase>
+    <testcase classname="ProviderService updateProvider should update provider with user link" name="ProviderService updateProvider should update provider with user link" time="0.543">
+    </testcase>
+    <testcase classname="ProviderService updateProvider should update provider with appointment types" name="ProviderService updateProvider should update provider with appointment types" time="0.517">
+    </testcase>
+    <testcase classname="ProviderService updateProvider should return null for non-existent provider" name="ProviderService updateProvider should return null for non-existent provider" time="0.49">
+      <failure>Error: Profissional não encontrado
+    at ProviderService.updateProvider (/home/rebelde/development/topsmile/backend/src/services/providerService.ts:190:23)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/unit/services/providerService.test.ts:329:22)</failure>
+    </testcase>
+    <testcase classname="ProviderService updateProvider should throw error for duplicate email update" name="ProviderService updateProvider should throw error for duplicate email update" time="0.547">
+    </testcase>
+    <testcase classname="ProviderService deleteProvider should delete provider successfully (soft delete)" name="ProviderService deleteProvider should delete provider successfully (soft delete)" time="0.547">
+    </testcase>
+    <testcase classname="ProviderService deleteProvider should return false for non-existent provider" name="ProviderService deleteProvider should return false for non-existent provider" time="0.491">
+    </testcase>
+    <testcase classname="ProviderService deleteProvider should throw error for invalid provider ID" name="ProviderService deleteProvider should throw error for invalid provider ID" time="0.485">
+    </testcase>
+    <testcase classname="ProviderService searchProviders should search providers by name" name="ProviderService searchProviders should search providers by name" time="0.619">
+    </testcase>
+    <testcase classname="ProviderService searchProviders should search providers by email" name="ProviderService searchProviders should search providers by email" time="0.565">
+    </testcase>
+    <testcase classname="ProviderService searchProviders should search providers by specialty" name="ProviderService searchProviders should search providers by specialty" time="0.563">
+    </testcase>
+    <testcase classname="ProviderService searchProviders should filter by specialties array" name="ProviderService searchProviders should filter by specialties array" time="0.554">
+    </testcase>
+    <testcase classname="ProviderService searchProviders should return all providers when no search term" name="ProviderService searchProviders should return all providers when no search term" time="0.559">
+    </testcase>
+    <testcase classname="ProviderService searchProviders should paginate results" name="ProviderService searchProviders should paginate results" time="0.575">
+    </testcase>
+    <testcase classname="ProviderService searchProviders should sort results" name="ProviderService searchProviders should sort results" time="0.564">
+    </testcase>
+    <testcase classname="ProviderService getProvidersByClinic should return all active providers for clinic" name="ProviderService getProvidersByClinic should return all active providers for clinic" time="0.63">
+    </testcase>
+    <testcase classname="ProviderService getProvidersByClinic should return inactive providers when specified" name="ProviderService getProvidersByClinic should return inactive providers when specified" time="0.564">
+    </testcase>
+    <testcase classname="ProviderService getProvidersByClinic should throw error for invalid clinic ID" name="ProviderService getProvidersByClinic should throw error for invalid clinic ID" time="0.544">
+    </testcase>
+    <testcase classname="ProviderService updateWorkingHours should update working hours successfully" name="ProviderService updateWorkingHours should update working hours successfully" time="0.54">
+    </testcase>
+    <testcase classname="ProviderService updateWorkingHours should return null for non-existent provider" name="ProviderService updateWorkingHours should return null for non-existent provider" time="0.489">
+    </testcase>
+    <testcase classname="ProviderService updateAppointmentTypes should update appointment types successfully" name="ProviderService updateAppointmentTypes should update appointment types successfully" time="0.524">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+- Expected  - 1
++ Received  + 7
+
+- 68c4c793eb6ffb59cbf55bfb
++ {
++   _id: new ObjectId(&apos;68c4c793eb6ffb59cbf55bfb&apos;),
++   name: &apos;Consulta Geral&apos;,
++   duration: 60,
++   color: &apos;#3B82F6&apos;,
++   category: &apos;consultation&apos;
++ }
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/unit/services/providerService.test.ts:617:54)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="ProviderService updateAppointmentTypes should throw error for invalid appointment type ID" name="ProviderService updateAppointmentTypes should throw error for invalid appointment type ID" time="0.499">
+    </testcase>
+    <testcase classname="ProviderService getProviderStats should return correct provider statistics" name="ProviderService getProviderStats should return correct provider statistics" time="0.603">
+    </testcase>
+    <testcase classname="ProviderService getProviderStats should return specialty breakdown" name="ProviderService getProviderStats should return specialty breakdown" time="0.587">
+    </testcase>
+    <testcase classname="ProviderService getProviderStats should throw error for invalid clinic ID" name="ProviderService getProviderStats should throw error for invalid clinic ID" time="0.562">
+    </testcase>
+    <testcase classname="ProviderService reactivateProvider should reactivate inactive provider" name="ProviderService reactivateProvider should reactivate inactive provider" time="0.528">
+    </testcase>
+    <testcase classname="ProviderService reactivateProvider should throw error for non-existent provider" name="ProviderService reactivateProvider should throw error for non-existent provider" time="0.493">
+    </testcase>
+    <testcase classname="ProviderService reactivateProvider should throw error for active provider" name="ProviderService reactivateProvider should throw error for active provider" time="0.499">
+    </testcase>
+    <testcase classname="ProviderService reactivateProvider should throw error for duplicate email when reactivating" name="ProviderService reactivateProvider should throw error for duplicate email when reactivating" time="0.512">
+      <failure>Error: Já existe um profissional ativo com este e-mail nesta clínica
+    at ProviderService.createProvider (/home/rebelde/development/topsmile/backend/src/services/providerService.ts:94:27)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/unit/services/providerService.test.ts:755:30)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="ContactService" errors="0" failures="4" skipped="0" timestamp="2025-09-13T01:23:37" time="16.451" tests="38">
+    <testcase classname="ContactService createContact should create a new contact successfully" name="ContactService createContact should create a new contact successfully" time="3.033">
+    </testcase>
+    <testcase classname="ContactService createContact should create contact with default source" name="ContactService createContact should create contact with default source" time="0.066">
+    </testcase>
+    <testcase classname="ContactService createContact should update existing contact when email already exists" name="ContactService createContact should update existing contact when email already exists" time="0.323">
+    </testcase>
+    <testcase classname="ContactService createContactSafe should create new contact and return isNew true" name="ContactService createContactSafe should create new contact and return isNew true" time="0.068">
+    </testcase>
+    <testcase classname="ContactService createContactSafe should update existing contact and return isNew false" name="ContactService createContactSafe should update existing contact and return isNew false" time="0.448">
+    </testcase>
+    <testcase classname="ContactService createContactSafe should throw error for missing required fields" name="ContactService createContactSafe should throw error for missing required fields" time="0.085">
+    </testcase>
+    <testcase classname="ContactService createMultipleContacts should create multiple new contacts successfully" name="ContactService createMultipleContacts should create multiple new contacts successfully" time="0.44">
+    </testcase>
+    <testcase classname="ContactService createMultipleContacts should handle mix of new and existing contacts" name="ContactService createMultipleContacts should handle mix of new and existing contacts" time="0.46">
+    </testcase>
+    <testcase classname="ContactService createMultipleContacts should handle errors in batch creation" name="ContactService createMultipleContacts should handle errors in batch creation" time="0.503">
+    </testcase>
+    <testcase classname="ContactService getContactById should return contact by ID" name="ContactService getContactById should return contact by ID" time="0.429">
+    </testcase>
+    <testcase classname="ContactService getContactById should return null for non-existent contact" name="ContactService getContactById should return null for non-existent contact" time="0.077">
+    </testcase>
+    <testcase classname="ContactService getContactByEmail should return contact by email" name="ContactService getContactByEmail should return contact by email" time="0.413">
+    </testcase>
+    <testcase classname="ContactService getContactByEmail should handle email case insensitivity" name="ContactService getContactByEmail should handle email case insensitivity" time="0.07">
+    </testcase>
+    <testcase classname="ContactService getContactByEmail should throw error for empty email" name="ContactService getContactByEmail should throw error for empty email" time="0.042">
+    </testcase>
+    <testcase classname="ContactService getContacts should return all contacts with pagination" name="ContactService getContacts should return all contacts with pagination" time="0.092">
+    </testcase>
+    <testcase classname="ContactService getContacts should filter by status" name="ContactService getContacts should filter by status" time="0.078">
+    </testcase>
+    <testcase classname="ContactService getContacts should filter by source" name="ContactService getContacts should filter by source" time="0.079">
+    </testcase>
+    <testcase classname="ContactService getContacts should filter by date range" name="ContactService getContacts should filter by date range" time="0.074">
+    </testcase>
+    <testcase classname="ContactService getContacts should search by name" name="ContactService getContacts should search by name" time="0.084">
+    </testcase>
+    <testcase classname="ContactService getContacts should search by email" name="ContactService getContacts should search by email" time="0.088">
+    </testcase>
+    <testcase classname="ContactService getContacts should paginate results" name="ContactService getContacts should paginate results" time="0.086">
+    </testcase>
+    <testcase classname="ContactService getContacts should sort results" name="ContactService getContacts should sort results" time="0.084">
+    </testcase>
+    <testcase classname="ContactService updateContact should update contact successfully" name="ContactService updateContact should update contact successfully" time="0.063">
+    </testcase>
+    <testcase classname="ContactService updateContact should not update protected fields" name="ContactService updateContact should not update protected fields" time="0.051">
+    </testcase>
+    <testcase classname="ContactService updateContact should return null for non-existent contact" name="ContactService updateContact should return null for non-existent contact" time="0.037">
+    </testcase>
+    <testcase classname="ContactService updateContactStatus should update status for multiple contacts" name="ContactService updateContactStatus should update status for multiple contacts" time="0.052">
+    </testcase>
+    <testcase classname="ContactService updateContactStatus should update status and assign contact" name="ContactService updateContactStatus should update status and assign contact" time="0.049">
+    </testcase>
+    <testcase classname="ContactService deleteContact should delete contact successfully" name="ContactService deleteContact should delete contact successfully" time="0.055">
+    </testcase>
+    <testcase classname="ContactService deleteContact should return false for non-existent contact" name="ContactService deleteContact should return false for non-existent contact" time="0.041">
+    </testcase>
+    <testcase classname="ContactService softDeleteContact should soft delete contact successfully" name="ContactService softDeleteContact should soft delete contact successfully" time="0.147">
+      <failure>CastError: Cast to ObjectId failed for value &quot;user123&quot; (type string) at path &quot;deletedBy&quot; because of &quot;BSONError&quot;
+    at SchemaObjectId.Object.&lt;anonymous&gt;.SchemaObjectId.cast (/home/rebelde/development/topsmile/backend/node_modules/mongoose/lib/schema/objectId.js:251:11)
+    at SchemaObjectId.Object.&lt;anonymous&gt;.SchemaType.applySetters (/home/rebelde/development/topsmile/backend/node_modules/mongoose/lib/schemaType.js:1258:12)
+    at SchemaObjectId.Object.&lt;anonymous&gt;.SchemaType.castForQuery (/home/rebelde/development/topsmile/backend/node_modules/mongoose/lib/schemaType.js:1694:17)
+    at castUpdateVal (/home/rebelde/development/topsmile/backend/node_modules/mongoose/lib/helpers/query/castUpdate.js:628:19)
+    at walkUpdatePath (/home/rebelde/development/topsmile/backend/node_modules/mongoose/lib/helpers/query/castUpdate.js:433:24)
+    at castUpdate (/home/rebelde/development/topsmile/backend/node_modules/mongoose/lib/helpers/query/castUpdate.js:144:7)
+    at model.Query._castUpdate (/home/rebelde/development/topsmile/backend/node_modules/mongoose/lib/query.js:4874:10)
+    at model.Query._findOneAndUpdate (/home/rebelde/development/topsmile/backend/node_modules/mongoose/lib/query.js:3497:23)
+    at model.Query.exec (/home/rebelde/development/topsmile/backend/node_modules/mongoose/lib/query.js:4627:80)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at ContactService.softDeleteContact (/home/rebelde/development/topsmile/backend/src/services/contactService.ts:317:14)
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/unit/services/contactService.test.ts:564:22)</failure>
+    </testcase>
+    <testcase classname="ContactService softDeleteContact should return null for non-existent contact" name="ContactService softDeleteContact should return null for non-existent contact" time="0.045">
+      <failure>ValidationError: Validation failed: status: `deleted` is not a valid enum value for path `status`.
+    at _done (/home/rebelde/development/topsmile/backend/node_modules/mongoose/lib/helpers/updateValidators.js:231:19)
+    at /home/rebelde/development/topsmile/backend/node_modules/mongoose/lib/helpers/updateValidators.js:207:11
+    at schemaPath.doValidate.updateValidator (/home/rebelde/development/topsmile/backend/node_modules/mongoose/lib/helpers/updateValidators.js:165:13)
+    at /home/rebelde/development/topsmile/backend/node_modules/mongoose/lib/schemaType.js:1416:9
+    at processTicksAndRejections (node:internal/process/task_queues:85:11)</failure>
+    </testcase>
+    <testcase classname="ContactService getContactStats should return correct contact statistics" name="ContactService getContactStats should return correct contact statistics" time="0.218">
+    </testcase>
+    <testcase classname="ContactService getContactStats should return status breakdown" name="ContactService getContactStats should return status breakdown" time="0.098">
+    </testcase>
+    <testcase classname="ContactService getContactStats should return source breakdown" name="ContactService getContactStats should return source breakdown" time="0.083">
+    </testcase>
+    <testcase classname="ContactService findDuplicateContacts should find duplicate contacts by email" name="ContactService findDuplicateContacts should find duplicate contacts by email" time="0.065">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 1
+Received: 0
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/unit/services/contactService.test.ts:675:29)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="ContactService findDuplicateContacts should return empty array when no duplicates" name="ContactService findDuplicateContacts should return empty array when no duplicates" time="0.068">
+    </testcase>
+    <testcase classname="ContactService mergeDuplicateContacts should merge duplicate contacts successfully" name="ContactService mergeDuplicateContacts should merge duplicate contacts successfully" time="0.072">
+      <failure>Error: expect(received).toContain(expected) // indexOf
+
+Expected substring: &quot;website&quot;
+Received string:    &quot;referral, referral&quot;
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/unit/services/contactService.test.ts:725:29)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="ContactService mergeDuplicateContacts should throw error for non-existent primary contact" name="ContactService mergeDuplicateContacts should throw error for non-existent primary contact" time="0.036">
+    </testcase>
+  </testsuite>
+  <testsuite name="AppointmentService" errors="0" failures="0" skipped="0" timestamp="2025-09-13T01:23:54" time="29.719" tests="21">
+    <testcase classname="AppointmentService createAppointment should create a new appointment successfully" name="AppointmentService createAppointment should create a new appointment successfully" time="5.28">
+    </testcase>
+    <testcase classname="AppointmentService createAppointment should create appointment with reminders" name="AppointmentService createAppointment should create appointment with reminders" time="1.189">
+    </testcase>
+    <testcase classname="AppointmentService createAppointment should throw error for overlapping appointments" name="AppointmentService createAppointment should throw error for overlapping appointments" time="1.347">
+    </testcase>
+    <testcase classname="AppointmentService createAppointment should validate required fields" name="AppointmentService createAppointment should validate required fields" time="1.232">
+    </testcase>
+    <testcase classname="AppointmentService getAppointmentById should return appointment by ID" name="AppointmentService getAppointmentById should return appointment by ID" time="1.135">
+    </testcase>
+    <testcase classname="AppointmentService getAppointmentById should return null for non-existent appointment" name="AppointmentService getAppointmentById should return null for non-existent appointment" time="0.657">
+    </testcase>
+    <testcase classname="AppointmentService getAppointments should return appointments for clinic" name="AppointmentService getAppointments should return appointments for clinic" time="0.608">
+    </testcase>
+    <testcase classname="AppointmentService getAppointments should filter appointments by status" name="AppointmentService getAppointments should filter appointments by status" time="0.684">
+    </testcase>
+    <testcase classname="AppointmentService getAppointments should filter appointments by date range" name="AppointmentService getAppointments should filter appointments by date range" time="0.604">
+    </testcase>
+    <testcase classname="AppointmentService getAppointments should filter appointments by provider" name="AppointmentService getAppointments should filter appointments by provider" time="0.595">
+    </testcase>
+    <testcase classname="AppointmentService updateAppointment should update appointment successfully" name="AppointmentService updateAppointment should update appointment successfully" time="0.554">
+    </testcase>
+    <testcase classname="AppointmentService updateAppointment should update appointment time" name="AppointmentService updateAppointment should update appointment time" time="0.555">
+    </testcase>
+    <testcase classname="AppointmentService updateAppointment should return null for non-existent appointment" name="AppointmentService updateAppointment should return null for non-existent appointment" time="0.514">
+    </testcase>
+    <testcase classname="AppointmentService cancelAppointment should cancel appointment successfully" name="AppointmentService cancelAppointment should cancel appointment successfully" time="0.536">
+    </testcase>
+    <testcase classname="AppointmentService cancelAppointment should return null for non-existent appointment" name="AppointmentService cancelAppointment should return null for non-existent appointment" time="0.563">
+    </testcase>
+    <testcase classname="AppointmentService checkAvailability should return available time slots" name="AppointmentService checkAvailability should return available time slots" time="0.566">
+    </testcase>
+    <testcase classname="AppointmentService checkAvailability should exclude booked time slots" name="AppointmentService checkAvailability should exclude booked time slots" time="0.567">
+    </testcase>
+    <testcase classname="AppointmentService getAppointmentStats should return correct appointment statistics" name="AppointmentService getAppointmentStats should return correct appointment statistics" time="0.651">
+    </testcase>
+    <testcase classname="AppointmentService getAppointmentStats should return statistics for date range" name="AppointmentService getAppointmentStats should return statistics for date range" time="0.621">
+    </testcase>
+    <testcase classname="AppointmentService rescheduleAppointment should reschedule appointment successfully" name="AppointmentService rescheduleAppointment should reschedule appointment successfully" time="0.558">
+    </testcase>
+    <testcase classname="AppointmentService rescheduleAppointment should throw error for conflicting time slot" name="AppointmentService rescheduleAppointment should throw error for conflicting time slot" time="0.547">
+    </testcase>
+  </testsuite>
+  <testsuite name="Patient Routes Integration Tests" errors="0" failures="1" skipped="0" timestamp="2025-09-13T01:24:23" time="25.673" tests="23">
+    <testcase classname="Patient Routes Integration Tests POST /api/patients should create a patient successfully" name="Patient Routes Integration Tests POST /api/patients should create a patient successfully" time="4.548">
+    </testcase>
+    <testcase classname="Patient Routes Integration Tests POST /api/patients should return 400 for invalid data" name="Patient Routes Integration Tests POST /api/patients should return 400 for invalid data" time="0.676">
+    </testcase>
+    <testcase classname="Patient Routes Integration Tests POST /api/patients should return 400 for duplicate phone in same clinic" name="Patient Routes Integration Tests POST /api/patients should return 400 for duplicate phone in same clinic" time="0.637">
+    </testcase>
+    <testcase classname="Patient Routes Integration Tests POST /api/patients should create patient with minimal required data" name="Patient Routes Integration Tests POST /api/patients should create patient with minimal required data" time="0.579">
+    </testcase>
+    <testcase classname="Patient Routes Integration Tests GET /api/patients should return paginated list of patients" name="Patient Routes Integration Tests GET /api/patients should return paginated list of patients" time="0.543">
+    </testcase>
+    <testcase classname="Patient Routes Integration Tests GET /api/patients should search patients by name" name="Patient Routes Integration Tests GET /api/patients should search patients by name" time="0.605">
+    </testcase>
+    <testcase classname="Patient Routes Integration Tests GET /api/patients should search patients by phone" name="Patient Routes Integration Tests GET /api/patients should search patients by phone" time="0.568">
+    </testcase>
+    <testcase classname="Patient Routes Integration Tests GET /api/patients should search patients by email" name="Patient Routes Integration Tests GET /api/patients should search patients by email" time="0.555">
+    </testcase>
+    <testcase classname="Patient Routes Integration Tests GET /api/patients should filter by status" name="Patient Routes Integration Tests GET /api/patients should filter by status" time="0.527">
+    </testcase>
+    <testcase classname="Patient Routes Integration Tests GET /api/patients should paginate results" name="Patient Routes Integration Tests GET /api/patients should paginate results" time="0.518">
+    </testcase>
+    <testcase classname="Patient Routes Integration Tests GET /api/patients should sort results" name="Patient Routes Integration Tests GET /api/patients should sort results" time="0.535">
+    </testcase>
+    <testcase classname="Patient Routes Integration Tests GET /api/patients/stats should return patient statistics" name="Patient Routes Integration Tests GET /api/patients/stats should return patient statistics" time="0.599">
+    </testcase>
+    <testcase classname="Patient Routes Integration Tests GET /api/patients/:id should return patient by ID" name="Patient Routes Integration Tests GET /api/patients/:id should return patient by ID" time="0.532">
+    </testcase>
+    <testcase classname="Patient Routes Integration Tests GET /api/patients/:id should return 404 for non-existent patient" name="Patient Routes Integration Tests GET /api/patients/:id should return 404 for non-existent patient" time="0.502">
+    </testcase>
+    <testcase classname="Patient Routes Integration Tests PATCH /api/patients/:id should update patient successfully" name="Patient Routes Integration Tests PATCH /api/patients/:id should update patient successfully" time="0.514">
+    </testcase>
+    <testcase classname="Patient Routes Integration Tests PATCH /api/patients/:id should return 404 for non-existent patient" name="Patient Routes Integration Tests PATCH /api/patients/:id should return 404 for non-existent patient" time="0.541">
+    </testcase>
+    <testcase classname="Patient Routes Integration Tests PATCH /api/patients/:id should return 400 for invalid data" name="Patient Routes Integration Tests PATCH /api/patients/:id should return 400 for invalid data" time="0.505">
+    </testcase>
+    <testcase classname="Patient Routes Integration Tests PATCH /api/patients/:id/medical-history should update medical history successfully" name="Patient Routes Integration Tests PATCH /api/patients/:id/medical-history should update medical history successfully" time="0.617">
+    </testcase>
+    <testcase classname="Patient Routes Integration Tests PATCH /api/patients/:id/medical-history should update partial medical history" name="Patient Routes Integration Tests PATCH /api/patients/:id/medical-history should update partial medical history" time="0.504">
+    </testcase>
+    <testcase classname="Patient Routes Integration Tests PATCH /api/patients/:id/reactivate should reactivate patient successfully" name="Patient Routes Integration Tests PATCH /api/patients/:id/reactivate should reactivate patient successfully" time="0.51">
+    </testcase>
+    <testcase classname="Patient Routes Integration Tests PATCH /api/patients/:id/reactivate should return 404 for active patient" name="Patient Routes Integration Tests PATCH /api/patients/:id/reactivate should return 404 for active patient" time="0.498">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 404
+Received: 400
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientRoutes.test.ts:558:31)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="Patient Routes Integration Tests DELETE /api/patients/:id should delete patient successfully" name="Patient Routes Integration Tests DELETE /api/patients/:id should delete patient successfully" time="0.508">
+    </testcase>
+    <testcase classname="Patient Routes Integration Tests DELETE /api/patients/:id should return 404 for non-existent patient" name="Patient Routes Integration Tests DELETE /api/patients/:id should return 404 for non-existent patient" time="0.489">
+    </testcase>
+  </testsuite>
+  <testsuite name="SchedulingService" errors="0" failures="3" skipped="0" timestamp="2025-09-13T01:24:49" time="24.599" tests="16">
+    <testcase classname="SchedulingService createAppointment should create appointment successfully" name="SchedulingService createAppointment should create appointment successfully" time="5.613">
+    </testcase>
+    <testcase classname="SchedulingService createAppointment should return error for invalid appointment type" name="SchedulingService createAppointment should return error for invalid appointment type" time="1.06">
+    </testcase>
+    <testcase classname="SchedulingService createAppointment should return error for inactive provider" name="SchedulingService createAppointment should return error for inactive provider" time="0.78">
+    </testcase>
+    <testcase classname="SchedulingService createAppointment should return error for time conflict" name="SchedulingService createAppointment should return error for time conflict" time="1.382">
+    </testcase>
+    <testcase classname="SchedulingService rescheduleAppointment should reschedule appointment successfully" name="SchedulingService rescheduleAppointment should reschedule appointment successfully" time="1.229">
+    </testcase>
+    <testcase classname="SchedulingService rescheduleAppointment should return error for non-existent appointment" name="SchedulingService rescheduleAppointment should return error for non-existent appointment" time="0.689">
+    </testcase>
+    <testcase classname="SchedulingService cancelAppointment should cancel appointment successfully" name="SchedulingService cancelAppointment should cancel appointment successfully" time="0.634">
+    </testcase>
+    <testcase classname="SchedulingService cancelAppointment should prevent cancelling completed appointment" name="SchedulingService cancelAppointment should prevent cancelling completed appointment" time="0.719">
+    </testcase>
+    <testcase classname="SchedulingService getAvailableSlots should return available time slots" name="SchedulingService getAvailableSlots should return available time slots" time="0.547">
+      <failure>Error: expect(received).toBeGreaterThan(expected)
+
+Expected: &gt; 0
+Received:   0
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/unit/services/schedulingService.test.ts:286:29)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="SchedulingService getAvailableSlots should return empty array for non-existent appointment type" name="SchedulingService getAvailableSlots should return empty array for non-existent appointment type" time="0.572">
+    </testcase>
+    <testcase classname="SchedulingService getAvailableSlots should return empty array when no providers available" name="SchedulingService getAvailableSlots should return empty array when no providers available" time="0.572">
+    </testcase>
+    <testcase classname="SchedulingService getAppointments should return appointments within date range" name="SchedulingService getAppointments should return appointments within date range" time="0.591">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 2
+Received: 1
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/unit/services/schedulingService.test.ts:364:29)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="SchedulingService getAppointments should filter by provider and status" name="SchedulingService getAppointments should filter by provider and status" time="0.601">
+    </testcase>
+    <testcase classname="SchedulingService getAppointmentConflicts should return no conflicts when slot is available" name="SchedulingService getAppointmentConflicts should return no conflicts when slot is available" time="0.515">
+    </testcase>
+    <testcase classname="SchedulingService getAppointmentConflicts should return conflicts when appointments overlap" name="SchedulingService getAppointmentConflicts should return conflicts when appointments overlap" time="0.585">
+    </testcase>
+    <testcase classname="SchedulingService getProviderUtilization should calculate provider utilization correctly" name="SchedulingService getProviderUtilization should calculate provider utilization correctly" time="0.595">
+      <failure>TypeError: Cannot read properties of undefined (reading &apos;_id&apos;)
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/unit/services/schedulingService.test.ts:455:62)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="PatientService" errors="0" failures="0" skipped="0" timestamp="2025-09-13T01:25:14" time="21.107" tests="22">
+    <testcase classname="PatientService createPatient should create a new patient successfully" name="PatientService createPatient should create a new patient successfully" time="4.064">
+    </testcase>
+    <testcase classname="PatientService createPatient should create patient without optional fields" name="PatientService createPatient should create patient without optional fields" time="0.62">
+    </testcase>
+    <testcase classname="PatientService createPatient should throw error for duplicate phone" name="PatientService createPatient should throw error for duplicate phone" time="0.605">
+    </testcase>
+    <testcase classname="PatientService createPatient should validate required fields" name="PatientService createPatient should validate required fields" time="0.587">
+    </testcase>
+    <testcase classname="PatientService getPatientById should return patient by ID" name="PatientService getPatientById should return patient by ID" time="0.51">
+    </testcase>
+    <testcase classname="PatientService getPatientById should return null for non-existent patient" name="PatientService getPatientById should return null for non-existent patient" time="0.471">
+    </testcase>
+    <testcase classname="PatientService getPatientsByClinic should return all active patients for clinic" name="PatientService getPatientsByClinic should return all active patients for clinic" time="0.533">
+    </testcase>
+    <testcase classname="PatientService getPatientsByClinic should return inactive patients when specified" name="PatientService getPatientsByClinic should return inactive patients when specified" time="0.561">
+    </testcase>
+    <testcase classname="PatientService updatePatient should update patient successfully" name="PatientService updatePatient should update patient successfully" time="0.504">
+    </testcase>
+    <testcase classname="PatientService updatePatient should return null for non-existent patient" name="PatientService updatePatient should return null for non-existent patient" time="0.468">
+    </testcase>
+    <testcase classname="PatientService updatePatient should update medical history" name="PatientService updatePatient should update medical history" time="0.499">
+    </testcase>
+    <testcase classname="PatientService deletePatient should delete patient successfully" name="PatientService deletePatient should delete patient successfully" time="0.49">
+    </testcase>
+    <testcase classname="PatientService deletePatient should return false for non-existent patient" name="PatientService deletePatient should return false for non-existent patient" time="0.48">
+    </testcase>
+    <testcase classname="PatientService searchPatients should search patients by name" name="PatientService searchPatients should search patients by name" time="0.519">
+    </testcase>
+    <testcase classname="PatientService searchPatients should search patients by phone" name="PatientService searchPatients should search patients by phone" time="0.533">
+    </testcase>
+    <testcase classname="PatientService searchPatients should search patients by email" name="PatientService searchPatients should search patients by email" time="0.517">
+    </testcase>
+    <testcase classname="PatientService searchPatients should return empty array for no matches" name="PatientService searchPatients should return empty array for no matches" time="0.507">
+    </testcase>
+    <testcase classname="PatientService searchPatients should paginate results" name="PatientService searchPatients should paginate results" time="0.514">
+    </testcase>
+    <testcase classname="PatientService getPatientStats should return correct patient statistics" name="PatientService getPatientStats should return correct patient statistics" time="0.542">
+    </testcase>
+    <testcase classname="PatientService updateMedicalHistory should update medical history successfully" name="PatientService updateMedicalHistory should update medical history successfully" time="0.492">
+    </testcase>
+    <testcase classname="PatientService reactivatePatient should reactivate inactive patient" name="PatientService reactivatePatient should reactivate inactive patient" time="0.503">
+    </testcase>
+    <testcase classname="PatientService reactivatePatient should throw error for non-existent patient" name="PatientService reactivatePatient should throw error for non-existent patient" time="0.47">
+    </testcase>
+  </testsuite>
+  <testsuite name="Patient Portal Integration Tests" errors="0" failures="19" skipped="0" timestamp="2025-09-13T01:25:35" time="16.5" tests="22">
+    <testcase classname="Patient Portal Integration Tests should register a new patient user" name="Patient Portal Integration Tests should register a new patient user" time="3.723">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 200
+Received: 400
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:42:28)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="Patient Portal Integration Tests should login patient user and return access token" name="Patient Portal Integration Tests should login patient user and return access token" time="1.01">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 200
+Received: 400
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:53:28)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="Patient Portal Integration Tests should get patient user info with valid token" name="Patient Portal Integration Tests should get patient user info with valid token" time="0.63">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 200
+Received: 401
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:63:28)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="Patient Portal Integration Tests should get upcoming appointments for patient" name="Patient Portal Integration Tests should get upcoming appointments for patient" time="0.412">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 200
+Received: 401
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:73:28)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="Patient Portal Integration Tests should handle invalid login credentials" name="Patient Portal Integration Tests should handle invalid login credentials" time="0.247">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 401
+Received: 400
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:85:28)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="Patient Portal Integration Tests should logout patient user successfully" name="Patient Portal Integration Tests should logout patient user successfully" time="0.165">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 200
+Received: 401
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:93:28)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="Patient Portal Integration Tests should reject requests with invalid token" name="Patient Portal Integration Tests should reject requests with invalid token" time="0.311">
+    </testcase>
+    <testcase classname="Patient Portal Integration Tests should reject requests without token" name="Patient Portal Integration Tests should reject requests without token" time="0.161">
+    </testcase>
+    <testcase classname="Patient Portal Integration Tests should handle appointment booking with valid data" name="Patient Portal Integration Tests should handle appointment booking with valid data" time="0.168">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 201
+Received: 401
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:127:28)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="Patient Portal Integration Tests should handle appointment cancellation" name="Patient Portal Integration Tests should handle appointment cancellation" time="0.118">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 200
+Received: 401
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:139:31)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="Patient Portal Integration Tests should handle patient profile updates" name="Patient Portal Integration Tests should handle patient profile updates" time="0.163">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 200
+Received: 404
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:172:28)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="Patient Portal Integration Tests should handle password reset request" name="Patient Portal Integration Tests should handle password reset request" time="0.144">
+    </testcase>
+    <testcase classname="Patient Portal Integration Tests should handle rate limiting on auth endpoints" name="Patient Portal Integration Tests should handle rate limiting on auth endpoints" time="0.286">
+      <failure>Error: expect(received).toBeGreaterThan(expected)
+
+Expected: &gt; 0
+Received:   0
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:202:41)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="Patient Portal Integration Tests should handle concurrent session management" name="Patient Portal Integration Tests should handle concurrent session management" time="0.178">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 200
+Received: 400
+    at /home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:223:30
+    at Array.forEach (&lt;anonymous&gt;)
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:222:18)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="Patient Portal Integration Tests should handle appointment rescheduling" name="Patient Portal Integration Tests should handle appointment rescheduling" time="0.157">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 200
+Received: 401
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:249:31)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="Patient Portal Integration Tests should handle patient medical history retrieval" name="Patient Portal Integration Tests should handle patient medical history retrieval" time="0.147">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 200
+Received: 401
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:273:28)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="Patient Portal Integration Tests should handle appointment type listing" name="Patient Portal Integration Tests should handle appointment type listing" time="0.14">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 200
+Received: 401
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:282:28)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="Patient Portal Integration Tests should handle provider availability checking" name="Patient Portal Integration Tests should handle provider availability checking" time="0.134">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 200
+Received: 401
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:299:28)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="Patient Portal Integration Tests should handle error responses gracefully" name="Patient Portal Integration Tests should handle error responses gracefully" time="0.177">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: 404
+Received: 401
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:308:28)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="Patient Portal Integration Tests should handle CORS headers properly" name="Patient Portal Integration Tests should handle CORS headers properly" time="0.053">
+      <failure>Error: expect(received).toBeDefined()
+
+Received: undefined
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:320:56)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="Patient Portal Integration Tests should handle large request payloads" name="Patient Portal Integration Tests should handle large request payloads" time="0.038">
+      <failure>Error: expect(received).toContain(expected) // indexOf
+
+Expected value: 401
+Received array: [200, 201, 400, 413]
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:341:34)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="Patient Portal Integration Tests should handle database connection errors gracefully" name="Patient Portal Integration Tests should handle database connection errors gracefully" time="0.045">
+      <failure>Error: expect(received).toContain(expected) // indexOf
+
+Expected value: 401
+Received array: [200, 500]
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/patientPortal.test.ts:353:24)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+  </testsuite>
+  <testsuite name="Auth Routes Integration" errors="0" failures="1" skipped="0" timestamp="2025-09-13T01:25:51" time="18.985" tests="13">
+    <testcase classname="Auth Routes Integration POST /api/auth/register should register a new user successfully" name="Auth Routes Integration POST /api/auth/register should register a new user successfully" time="3.82">
+    </testcase>
+    <testcase classname="Auth Routes Integration POST /api/auth/register should return 400 for invalid data" name="Auth Routes Integration POST /api/auth/register should return 400 for invalid data" time="1.087">
+    </testcase>
+    <testcase classname="Auth Routes Integration POST /api/auth/register should return 400 for duplicate email" name="Auth Routes Integration POST /api/auth/register should return 400 for duplicate email" time="0.631">
+    </testcase>
+    <testcase classname="Auth Routes Integration POST /api/auth/login should login user successfully" name="Auth Routes Integration POST /api/auth/login should login user successfully" time="0.931">
+    </testcase>
+    <testcase classname="Auth Routes Integration POST /api/auth/login should return 400 for missing credentials" name="Auth Routes Integration POST /api/auth/login should return 400 for missing credentials" time="0.483">
+    </testcase>
+    <testcase classname="Auth Routes Integration POST /api/auth/login should return 401 for invalid credentials" name="Auth Routes Integration POST /api/auth/login should return 401 for invalid credentials" time="0.477">
+    </testcase>
+    <testcase classname="Auth Routes Integration GET /api/auth/me should return current user profile" name="Auth Routes Integration GET /api/auth/me should return current user profile" time="0.476">
+      <failure>Error: expect(received).toBeDefined()
+
+Received: undefined
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/authRoutes.test.ts:139:39)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="Auth Routes Integration GET /api/auth/me should return 401 for invalid token" name="Auth Routes Integration GET /api/auth/me should return 401 for invalid token" time="0.473">
+    </testcase>
+    <testcase classname="Auth Routes Integration PATCH /api/auth/change-password should change password successfully" name="Auth Routes Integration PATCH /api/auth/change-password should change password successfully" time="1.348">
+    </testcase>
+    <testcase classname="Auth Routes Integration PATCH /api/auth/change-password should return 400 for invalid new password" name="Auth Routes Integration PATCH /api/auth/change-password should return 400 for invalid new password" time="0.475">
+    </testcase>
+    <testcase classname="Auth Routes Integration POST /api/auth/logout should logout user successfully" name="Auth Routes Integration POST /api/auth/logout should logout user successfully" time="0.475">
+    </testcase>
+    <testcase classname="Auth Routes Integration POST /api/auth/refresh should refresh access token successfully" name="Auth Routes Integration POST /api/auth/refresh should refresh access token successfully" time="0.967">
+    </testcase>
+    <testcase classname="Auth Routes Integration POST /api/auth/refresh should return 401 for invalid refresh token" name="Auth Routes Integration POST /api/auth/refresh should return 401 for invalid refresh token" time="0.476">
+    </testcase>
+  </testsuite>
+  <testsuite name="AuthService" errors="0" failures="0" skipped="0" timestamp="2025-09-13T01:26:10" time="16.57" tests="11">
+    <testcase classname="AuthService register should register a new user successfully" name="AuthService register should register a new user successfully" time="2.963">
+    </testcase>
+    <testcase classname="AuthService register should hash the password" name="AuthService register should hash the password" time="0.52">
+    </testcase>
+    <testcase classname="AuthService register should throw error for duplicate email" name="AuthService register should throw error for duplicate email" time="0.499">
+    </testcase>
+    <testcase classname="AuthService register should create clinic when clinic data is provided" name="AuthService register should create clinic when clinic data is provided" time="0.513">
+    </testcase>
+    <testcase classname="AuthService login should login user with correct credentials" name="AuthService login should login user with correct credentials" time="0.938">
+    </testcase>
+    <testcase classname="AuthService login should throw error for invalid email" name="AuthService login should throw error for invalid email" time="0.021">
+    </testcase>
+    <testcase classname="AuthService login should throw error for invalid password" name="AuthService login should throw error for invalid password" time="0.908">
+    </testcase>
+    <testcase classname="AuthService getUserById should return user by ID" name="AuthService getUserById should return user by ID" time="0.476">
+    </testcase>
+    <testcase classname="AuthService getUserById should return null for non-existent user" name="AuthService getUserById should return null for non-existent user" time="0.019">
+    </testcase>
+    <testcase classname="AuthService changePassword should change password successfully" name="AuthService changePassword should change password successfully" time="1.814">
+    </testcase>
+    <testcase classname="AuthService changePassword should throw error for incorrect current password" name="AuthService changePassword should throw error for incorrect current password" time="0.908">
+    </testcase>
+  </testsuite>
+  <testsuite name="Performance Tests" errors="0" failures="0" skipped="0" timestamp="2025-09-13T01:26:27" time="19.208" tests="5">
+    <testcase classname="Performance Tests Load Testing should handle multiple concurrent login requests" name="Performance Tests Load Testing should handle multiple concurrent login requests" time="5.817">
+    </testcase>
+    <testcase classname="Performance Tests Load Testing should handle rapid successive auth requests" name="Performance Tests Load Testing should handle rapid successive auth requests" time="0.835">
+    </testcase>
+    <testcase classname="Performance Tests Memory Usage should not have memory leaks with repeated requests" name="Performance Tests Memory Usage should not have memory leaks with repeated requests" time="1.394">
+    </testcase>
+    <testcase classname="Performance Tests Database Query Performance should handle database load efficiently" name="Performance Tests Database Query Performance should handle database load efficiently" time="4.92">
+    </testcase>
+    <testcase classname="Performance Tests Response Time Benchmarks should respond quickly to auth endpoints" name="Performance Tests Response Time Benchmarks should respond quickly to auth endpoints" time="0.49">
+    </testcase>
+  </testsuite>
+  <testsuite name="Security Tests" errors="0" failures="0" skipped="0" timestamp="2025-09-13T01:26:46" time="11.917" tests="7">
+    <testcase classname="Security Tests Token Expiration should handle expired tokens" name="Security Tests Token Expiration should handle expired tokens" time="3.824">
+    </testcase>
+    <testcase classname="Security Tests Token Expiration should handle malformed tokens" name="Security Tests Token Expiration should handle malformed tokens" time="0.639">
+    </testcase>
+    <testcase classname="Security Tests Token Expiration should handle missing tokens" name="Security Tests Token Expiration should handle missing tokens" time="0.492">
+    </testcase>
+    <testcase classname="Security Tests Input Validation &amp; Sanitization should handle extremely long input strings" name="Security Tests Input Validation &amp; Sanitization should handle extremely long input strings" time="0.562">
+    </testcase>
+    <testcase classname="Security Tests Input Validation &amp; Sanitization should handle SQL injection attempts" name="Security Tests Input Validation &amp; Sanitization should handle SQL injection attempts" time="0.47">
+    </testcase>
+    <testcase classname="Security Tests Input Validation &amp; Sanitization should handle XSS attempts" name="Security Tests Input Validation &amp; Sanitization should handle XSS attempts" time="0.458">
+    </testcase>
+    <testcase classname="Security Tests Rate Limiting should handle rapid successive requests" name="Security Tests Rate Limiting should handle rapid successive requests" time="0.563">
+    </testcase>
+  </testsuite>
+  <testsuite name="Error Boundary Tests" errors="0" failures="1" skipped="0" timestamp="2025-09-13T01:26:58" time="15.504" tests="6">
+    <testcase classname="Error Boundary Tests Database Connection Failures should handle database disconnection gracefully" name="Error Boundary Tests Database Connection Failures should handle database disconnection gracefully" time="4.071">
+    </testcase>
+    <testcase classname="Error Boundary Tests Database Connection Failures should handle database connection timeout" name="Error Boundary Tests Database Connection Failures should handle database connection timeout" time="1.268">
+    </testcase>
+    <testcase classname="Error Boundary Tests External Service Failures should handle external API failures" name="Error Boundary Tests External Service Failures should handle external API failures" time="1.086">
+    </testcase>
+    <testcase classname="Error Boundary Tests Malformed Requests should handle malformed JSON" name="Error Boundary Tests Malformed Requests should handle malformed JSON" time="0.481">
+      <failure>Error: expect(received).toBe(expected) // Object.is equality
+
+Expected: false
+Received: undefined
+    at Object.&lt;anonymous&gt; (/home/rebelde/development/topsmile/backend/tests/integration/errorBoundary.test.ts:76:37)
+    at processTicksAndRejections (node:internal/process/task_queues:105:5)</failure>
+    </testcase>
+    <testcase classname="Error Boundary Tests Malformed Requests should handle oversized payloads" name="Error Boundary Tests Malformed Requests should handle oversized payloads" time="0.49">
+    </testcase>
+    <testcase classname="Error Boundary Tests Concurrent Request Handling should handle multiple concurrent requests" name="Error Boundary Tests Concurrent Request Handling should handle multiple concurrent requests" time="2.095">
+    </testcase>
+  </testsuite>
+  <testsuite name="Database Setup Test" errors="0" failures="0" skipped="0" timestamp="2025-09-13T01:27:14" time="4.557" tests="1">
+    <testcase classname="Database Setup Test should connect to database" name="Database Setup Test should connect to database" time="0.002">
+    </testcase>
+  </testsuite>
+</testsuites>

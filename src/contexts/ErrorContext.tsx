@@ -35,6 +35,10 @@ export const ErrorProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return `notification-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
   }, []);
 
+  const dismissNotification = useCallback((id: string) => {
+    setNotifications(prev => prev.filter(notification => notification.id !== id));
+  }, []);
+
   const addNotification = useCallback((
     type: ErrorNotification['type'],
     title: string,
@@ -62,7 +66,7 @@ export const ErrorProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     }
 
     return id;
-  }, [generateId]);
+  }, [generateId, dismissNotification]);
 
   const showError = useCallback((title: string, message: string, options?: Partial<ErrorNotification>) => {
     return addNotification('error', title, message, options);
@@ -79,10 +83,6 @@ export const ErrorProvider: React.FC<{ children: ReactNode }> = ({ children }) =
   const showSuccess = useCallback((title: string, message: string, options?: Partial<ErrorNotification>) => {
     return addNotification('success', title, message, options);
   }, [addNotification]);
-
-  const dismissNotification = useCallback((id: string) => {
-    setNotifications(prev => prev.filter(notification => notification.id !== id));
-  }, []);
 
   const clearAllNotifications = useCallback(() => {
     setNotifications([]);

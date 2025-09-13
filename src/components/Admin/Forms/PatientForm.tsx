@@ -166,7 +166,7 @@ const PatientForm: React.FC<PatientFormProps> = ({
 
     if (!formData.phone.trim()) {
       newErrors.phone = 'Telefone é obrigatório';
-    } else if (!/^[\d\s\-\(\)\+]{10,15}$/.test(formData.phone)) {
+    } else if (!/^[\d\s\-()+]{10,15}$/.test(formData.phone)) {
       newErrors.phone = 'Telefone inválido';
     }
 

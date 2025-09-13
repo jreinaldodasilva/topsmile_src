@@ -1,6 +1,5 @@
 // src/pages/Admin/AppointmentCalendar.tsx
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../contexts/AuthContext';
+import React, { useState, useEffect, useCallback } from 'react';
 import { apiService } from '../../services/apiService';
 import type { Appointment, Provider, Patient } from '../../types/api';
 import AppointmentForm from '../../components/Admin/Forms/AppointmentForm';
@@ -14,7 +13,6 @@ interface CalendarFilters {
 }
 
 const AppointmentCalendar: React.FC = () => {
-  const { user } = useAuth();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,26 +27,26 @@ const AppointmentCalendar: React.FC = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
 
   // Fetch appointments and providers
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Build query parameters for appointments
       const appointmentParams: Record<string, any> = {};
-      
+
       if (filters.providerId) {
         appointmentParams.providerId = filters.providerId;
       }
-      
+
       if (filters.status) {
         appointmentParams.status = filters.status;
       }
-      
+
       // Add date range based on current view and date
       const startDate = new Date(currentDate);
       const endDate = new Date(currentDate);
-      
+
       switch (filters.view) {
         case 'day':
           // Same day
@@ -66,7 +64,7 @@ const AppointmentCalendar: React.FC = () => {
           endDate.setDate(0);
           break;
       }
-      
+
       appointmentParams.start = startDate.toISOString();
       appointmentParams.end = endDate.toISOString();
 
@@ -75,14 +73,14 @@ const AppointmentCalendar: React.FC = () => {
         apiService.appointments.getAll(appointmentParams),
         apiService.providers.getAll({ isActive: true })
       ]);
-      
+
       if (appointmentsResult.success && appointmentsResult.data) {
         setAppointments(appointmentsResult.data);
       } else {
         setError(appointmentsResult.message || 'Erro ao carregar agendamentos');
         setAppointments([]);
       }
-      
+
       if (providersResult.success && providersResult.data) {
         setProviders(providersResult.data);
       } else {
@@ -94,11 +92,11 @@ const AppointmentCalendar: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, currentDate]);
 
   useEffect(() => {
     fetchData();
-  }, [filters]);
+  }, [fetchData]);
 
   const handleFilterChange = (key: keyof CalendarFilters, value: any) => {
     setFilters(prev => ({ ...prev, [key]: value }));

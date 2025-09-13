@@ -2,8 +2,7 @@
 import express from "express";
 import { authenticate, authorize, AuthenticatedRequest } from "../middleware/auth";
 import { schedulingService } from "../services/schedulingService";
-import { AppointmentType } from "../models/AppointmentType";
-import { Provider } from "../models/Provider";
+
 import { Appointment } from "../models/Appointment";
 import { body, validationResult } from 'express-validator';
 
@@ -13,6 +12,65 @@ const router = express.Router();
 router.use(authenticate);
 
 // Get provider availability
+/**
+ * @swagger
+ * /api/appointments/providers/{providerId}/availability:
+ *   get:
+ *     summary: Verificar disponibilidade do profissional
+ *     description: Retorna os horários disponíveis de um profissional para uma data específica
+ *     tags: [Appointments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: providerId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do profissional
+ *       - in: query
+ *         name: date
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Data para verificar disponibilidade
+ *       - in: query
+ *         name: appointmentTypeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do tipo de agendamento
+ *     responses:
+ *       200:
+ *         description: Horários disponíveis retornados com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       startTime:
+ *                         type: string
+ *                         format: date-time
+ *                       endTime:
+ *                         type: string
+ *                         format: date-time
+ *                       available:
+ *                         type: boolean
+ *       400:
+ *         description: Parâmetros inválidos
+ *       401:
+ *         description: Não autorizado
+ *       500:
+ *         description: Erro interno do servidor
+ */
 router.get("/providers/:providerId/availability", async (req: AuthenticatedRequest, res) => {
   try {
     const providerId = req.params.providerId;
@@ -83,6 +141,65 @@ const bookingValidation = [
 ];
 
 // Create a new appointment (standard CRUD endpoint)
+/**
+ * @swagger
+ * /api/appointments:
+ *   post:
+ *     summary: Criar agendamento
+ *     description: Cria um novo agendamento na clínica
+ *     tags: [Appointments]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - patientId
+ *               - providerId
+ *               - appointmentTypeId
+ *               - scheduledStart
+ *             properties:
+ *               patientId:
+ *                 type: string
+ *                 description: ID do paciente
+ *               providerId:
+ *                 type: string
+ *                 description: ID do profissional
+ *               appointmentTypeId:
+ *                 type: string
+ *                 description: ID do tipo de agendamento
+ *               scheduledStart:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Data/hora de início
+ *               notes:
+ *                 type: string
+ *                 maxLength: 500
+ *                 description: Observações
+ *               priority:
+ *                 type: string
+ *                 enum: [routine, urgent, emergency]
+ *                 description: Prioridade
+ *     responses:
+ *       201:
+ *         description: Agendamento criado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/Appointment'
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Não autorizado
+ */
 router.post("/", bookingValidation, async (req: AuthenticatedRequest, res: any) => {
   try {
     const errors = validationResult(req);
@@ -159,6 +276,60 @@ router.post("/book", bookingValidation, async (req: AuthenticatedRequest, res: a
 });
 
 // Get appointments for a date range
+/**
+ * @swagger
+ * /api/appointments:
+ *   get:
+ *     summary: Listar agendamentos
+ *     description: Retorna lista de agendamentos em um intervalo de datas
+ *     tags: [Appointments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: startDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Data inicial
+ *       - in: query
+ *         name: endDate
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Data final
+ *       - in: query
+ *         name: providerId
+ *         schema:
+ *           type: string
+ *         description: Filtrar por profissional
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [scheduled, confirmed, checked_in, in_progress, completed, cancelled, no_show]
+ *         description: Filtrar por status
+ *     responses:
+ *       200:
+ *         description: Agendamentos retornados com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Appointment'
+ *       400:
+ *         description: Parâmetros inválidos
+ *       401:
+ *         description: Não autorizado
+ */
 router.get("/", async (req: AuthenticatedRequest, res) => {
   try {
     const { startDate, endDate, providerId, status } = req.query;
@@ -201,7 +372,43 @@ router.get("/", async (req: AuthenticatedRequest, res) => {
   }
 });
 
-// Get specific appointment
+/**
+ * @swagger
+ * /api/appointments/{id}:
+ *   get:
+ *     summary: Buscar agendamento por ID
+ *     description: Retorna um agendamento específico pelo ID
+ *     tags: [Appointments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do agendamento
+ *     responses:
+ *       200:
+ *         description: Agendamento encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/Appointment'
+ *       401:
+ *         description: Não autorizado
+ *       403:
+ *         description: Acesso negado
+ *       404:
+ *         description: Agendamento não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
 router.get("/:id", async (req: AuthenticatedRequest, res) => {
   try {
     const appointment = await Appointment.findById(req.params.id)
@@ -239,6 +446,79 @@ router.get("/:id", async (req: AuthenticatedRequest, res) => {
 });
 
 // Update appointment (general update endpoint)
+/**
+ * @swagger
+ * /api/appointments/{id}:
+ *   patch:
+ *     summary: Atualizar agendamento
+ *     description: Atualiza os dados de um agendamento
+ *     tags: [Appointments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do agendamento
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               patientId:
+ *                 type: string
+ *                 description: ID do paciente
+ *               providerId:
+ *                 type: string
+ *                 description: ID do profissional
+ *               appointmentTypeId:
+ *                 type: string
+ *                 description: ID do tipo de agendamento
+ *               scheduledStart:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Data/hora de início
+ *               scheduledEnd:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Data/hora de fim
+ *               status:
+ *                 type: string
+ *                 enum: [scheduled, confirmed, checked_in, in_progress, completed, cancelled, no_show]
+ *                 description: Status do agendamento
+ *               priority:
+ *                 type: string
+ *                 enum: [routine, urgent, emergency]
+ *                 description: Prioridade
+ *               notes:
+ *                 type: string
+ *                 maxLength: 500
+ *                 description: Observações
+ *     responses:
+ *       200:
+ *         description: Agendamento atualizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/Appointment'
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Não autorizado
+ *       403:
+ *         description: Acesso negado
+ *       404:
+ *         description: Agendamento não encontrado
+ */
 router.patch("/:id", bookingValidation.map(validation => validation.optional()), async (req: AuthenticatedRequest, res: any) => {
   try {
     const errors = validationResult(req);
@@ -304,7 +584,62 @@ router.patch("/:id", bookingValidation.map(validation => validation.optional()),
   }
 });
 
-// Update appointment status
+/**
+ * @swagger
+ * /api/appointments/{id}/status:
+ *   patch:
+ *     summary: Atualizar status do agendamento
+ *     description: Atualiza o status de um agendamento
+ *     tags: [Appointments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do agendamento
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [scheduled, confirmed, checked_in, in_progress, completed, cancelled, no_show]
+ *                 description: Novo status
+ *               cancellationReason:
+ *                 type: string
+ *                 maxLength: 500
+ *                 description: Motivo do cancelamento (opcional)
+ *     responses:
+ *       200:
+ *         description: Status atualizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/Appointment'
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Não autorizado
+ *       403:
+ *         description: Acesso negado
+ *       404:
+ *         description: Agendamento não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
 router.patch("/:id/status", 
   body('status').isIn(['scheduled', 'confirmed', 'checked_in', 'in_progress', 'completed', 'cancelled', 'no_show']),
   body('cancellationReason').optional().isLength({ max: 500 }),
@@ -370,7 +705,69 @@ router.patch("/:id/status",
   }
 );
 
-// Reschedule appointment
+/**
+ * @swagger
+ * /api/appointments/{id}/reschedule:
+ *   patch:
+ *     summary: Reagendar agendamento
+ *     description: Reagenda um agendamento para uma nova data/hora
+ *     tags: [Appointments]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do agendamento
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - newStart
+ *               - reason
+ *               - rescheduleBy
+ *             properties:
+ *               newStart:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Nova data/hora de início
+ *               reason:
+ *                 type: string
+ *                 minLength: 1
+ *                 maxLength: 500
+ *                 description: Motivo do reagendamento
+ *               rescheduleBy:
+ *                 type: string
+ *                 enum: [patient, clinic]
+ *                 description: Quem solicitou o reagendamento
+ *     responses:
+ *       200:
+ *         description: Agendamento reagendado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/Appointment'
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Não autorizado
+ *       403:
+ *         description: Acesso negado
+ *       404:
+ *         description: Agendamento não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
 router.patch("/:id/reschedule",
   body('newStart').isISO8601().withMessage('Nova data/hora inválida'),
   body('reason').isLength({ min: 1, max: 500 }).withMessage('Motivo é obrigatório e deve ter no máximo 500 caracteres'),
@@ -437,7 +834,7 @@ router.delete("/:id",
         message: 'Agendamento excluído com sucesso'
       });
     } catch (err: any) {
-      console.error("Error deleting appointment:", err);
+      console.error("Error deleting appointment:,", err);
       return res.status(500).json({
         success: false,
         error: err.message

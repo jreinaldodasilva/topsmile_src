@@ -1,56 +1,67 @@
 .contact-main {
-  background: #f7f9fc;
+  background: var(--color-bg-secondary);
   min-height: 100vh;
-  padding-bottom: 3rem;
+  padding-bottom: var(--space-12);
 }
 
 .contact-hero {
   text-align: center;
-  padding: 3rem 1rem 2rem 1rem;
-  background: linear-gradient(90deg, #e3e7fd 0%, #fff 100%);
+  padding: var(--space-12) var(--space-4) var(--space-8) var(--space-4);
+  background: linear-gradient(90deg, var(--color-primary-50) 0%, var(--color-bg-primary) 100%);
 }
 
 .contact-title {
-  font-size: 2.5rem;
-  color: #1a237e;
-  margin-bottom: 0.5rem;
-  font-weight: 700;
+  font-size: var(--font-size-4xl);
+  color: var(--color-primary-700);
+  margin-bottom: var(--space-2);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
 }
 
 .contact-subtitle {
-  font-size: 1.25rem;
-  color: #3949ab;
+  font-size: var(--font-size-xl);
+  color: var(--color-primary-600);
   margin-bottom: 0;
 }
 
 .contact-section {
   display: flex;
   justify-content: center;
-  padding: 2rem 1rem;
+  padding: var(--space-8) var(--space-4);
 }
 
 .contact-card {
-  background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 2px 12px rgba(26,35,126,0.06);
-  padding: 2rem;
+  background: var(--color-bg-primary);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border-primary);
+  padding: var(--space-8);
   max-width: 600px;
   width: 100%;
 }
 
 .form-title {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #1a237e;
-  margin-bottom: 1rem;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-4);
   text-align: center;
 }
 
-@media (max-width: 700px) {
-  .contact-title {
-    font-size: 2rem;
+@media (max-width: 768px) {
+  .contact-hero {
+    padding: var(--space-8) var(--space-4) var(--space-6) var(--space-4);
   }
+
+  .contact-title {
+    font-size: var(--font-size-3xl);
+  }
+
+  .contact-subtitle {
+    font-size: var(--font-size-lg);
+  }
+
   .contact-card {
-    padding: 1.5rem 1rem;
+    padding: var(--space-6) var(--space-4);
   }
 }

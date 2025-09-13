@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import Header from '../../components/Header/Header';
 import Footer from '../../components/Footer/Footer';
+import Button from '../../components/UI/Button/Button';
 import './PricingPage.css';
 
 const plans = [
@@ -89,7 +90,9 @@ const PricingPage: React.FC = () => (
                   <li key={idx}>{feature}</li>
                 ))}
               </ul>
-              <button className="plan-button">Assinar</button>
+              <Button variant={plan.highlight ? 'primary' : 'outline'} size="md">
+                Assinar
+              </Button>
             </motion.div>
           ))}
         </div>

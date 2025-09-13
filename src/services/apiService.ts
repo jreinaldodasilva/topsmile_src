@@ -126,6 +126,8 @@ export interface FormTemplate {
     id: string;
     label: string;
     type: string;
+    required?: boolean;
+    options?: Array<{ value: string; label: string }>;
     // Add other question fields as needed
   }>;
 }
@@ -149,6 +151,88 @@ async function login(email: string, password: string): Promise<ApiResult<{
   const res = await request<{ user: User; accessToken: string; refreshToken: string; expiresIn: string }>('/api/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
+    auth: false
+  });
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+// ADDED: Patient authentication methods
+async function patientLogin(email: string, password: string): Promise<ApiResult<{
+  patientUser: any;
+  accessToken: string;
+  refreshToken: string;
+}>> {
+  const res = await request('/api/patient/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ email, password }),
+    auth: false
+  });
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function patientRegister(data: {
+  patientId: string;
+  email: string;
+  password: string;
+}): Promise<ApiResult<{
+  patientUser: any;
+  accessToken?: string;
+  refreshToken?: string;
+}>> {
+  const res = await request('/api/patient/auth/register', {
+    method: 'POST',
+    body: JSON.stringify(data),
+    auth: false
+  });
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function patientMe(): Promise<ApiResult<any>> {
+  const res = await request('/api/patient/auth/me');
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function patientRefreshToken(refreshToken: string): Promise<ApiResult<{
+  accessToken: string;
+  refreshToken: string;
+}>> {
+  const res = await request('/api/patient/auth/refresh', {
+    method: 'POST',
+    body: JSON.stringify({ refreshToken }),
+    auth: false
+  });
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function patientLogout(): Promise<ApiResult<void>> {
+  const res = await request('/api/patient/auth/logout', {
+    method: 'POST'
+  });
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function patientVerifyEmail(token: string): Promise<ApiResult<void>> {
+  const res = await request('/api/patient/auth/verify-email', {
+    method: 'POST',
+    body: JSON.stringify({ token }),
+    auth: false
+  });
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function patientForgotPassword(email: string): Promise<ApiResult<void>> {
+  const res = await request('/api/patient/auth/forgot-password', {
+    method: 'POST',
+    body: JSON.stringify({ email }),
+    auth: false
+  });
+  return { success: res.ok, data: res.data, message: res.message };
+}
+
+async function patientResetPassword(token: string, password: string): Promise<ApiResult<void>> {
+  const res = await request('/api/patient/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify({ token, password }),
     auth: false
   });
   return { success: res.ok, data: res.data, message: res.message };
@@ -568,6 +652,16 @@ export const apiService = {
     me,
     refreshToken,
     logout
+  },
+  patientAuth: {
+    login: patientLogin,
+    register: patientRegister,
+    me: patientMe,
+    refreshToken: patientRefreshToken,
+    logout: patientLogout,
+    verifyEmail: patientVerifyEmail,
+    forgotPassword: patientForgotPassword,
+    resetPassword: patientResetPassword
   },
   contacts: {
     getAll: getContacts,

@@ -1,10 +1,18 @@
 /* src/pages/Admin/ProviderManagement.css */
-.provider-management {
-  padding: 2rem;
+.provider-management-page {
+  min-height: 100vh;
+  background: var(--color-bg-secondary);
+}
+
+.provider-management-main {
+  padding: var(--space-8) var(--space-4);
   max-width: 1400px;
   margin: 0 auto;
-  background-color: #f8fafc;
-  min-height: 100vh;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 /* Header */

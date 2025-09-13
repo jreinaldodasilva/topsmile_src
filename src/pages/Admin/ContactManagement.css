@@ -1,7 +1,7 @@
 /* src/pages/Admin/ContactManagement.css */
-.contact-management {
+.contact-management-page {
   min-height: 100vh;
-  background-color: #f8fafc;
+  background: var(--color-bg-secondary);
 }
 
 .contact-management-header {

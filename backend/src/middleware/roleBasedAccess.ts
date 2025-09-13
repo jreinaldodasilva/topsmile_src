@@ -1,5 +1,5 @@
 // backend/src/middleware/roleBasedAccess.ts
-import { Request, Response, NextFunction } from 'express';
+import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from './auth';
 
 // Define role hierarchy and permissions

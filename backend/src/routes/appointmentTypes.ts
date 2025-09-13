@@ -189,9 +189,87 @@ const searchValidation = [
 ];
 
 // Create a new appointment type
-router.post('/', 
+/**
+ * @swagger
+ * /api/appointment-types:
+ *   post:
+ *     summary: Criar tipo de agendamento
+ *     description: Cria um novo tipo de agendamento na clínica
+ *     tags: [Appointment Types]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - duration
+ *               - color
+ *               - category
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 100
+ *               description:
+ *                 type: string
+ *                 maxLength: 500
+ *               duration:
+ *                 type: integer
+ *                 minimum: 15
+ *                 maximum: 480
+ *               price:
+ *                 type: number
+ *                 minimum: 0
+ *               color:
+ *                 type: string
+ *                 pattern: '^#[0-9A-F]{6}$'
+ *               category:
+ *                 type: string
+ *                 enum: [consultation, cleaning, treatment, surgery, emergency]
+ *               allowOnlineBooking:
+ *                 type: boolean
+ *               requiresApproval:
+ *                 type: boolean
+ *               bufferBefore:
+ *                 type: integer
+ *                 minimum: 0
+ *                 maximum: 120
+ *               bufferAfter:
+ *                 type: integer
+ *                 minimum: 0
+ *                 maximum: 120
+ *               preparationInstructions:
+ *                 type: string
+ *                 maxLength: 1000
+ *               postTreatmentInstructions:
+ *                 type: string
+ *                 maxLength: 1000
+ *     responses:
+ *       201:
+ *         description: Tipo de agendamento criado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/AppointmentType'
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Não autorizado
+ */
+router.post('/',
     authorize('super_admin', 'admin', 'manager'),
-    createAppointmentTypeValidation, 
+    createAppointmentTypeValidation,
     async (req: AuthenticatedRequest, res: any) => {
         try {
             const errors = validationResult(req);
@@ -233,6 +311,95 @@ router.post('/',
 );
 
 // Get all appointment types with search and pagination
+/**
+ * @swagger
+ * /api/appointment-types:
+ *   get:
+ *     summary: Listar tipos de agendamento
+ *     description: Retorna lista de tipos de agendamento com filtros de busca e paginação
+ *     tags: [Appointment Types]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Termo de busca
+ *       - in: query
+ *         name: isActive
+ *         schema:
+ *           type: boolean
+ *         description: Status ativo
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *           enum: [consultation, cleaning, treatment, surgery, emergency]
+ *         description: Categoria
+ *       - in: query
+ *         name: allowOnlineBooking
+ *         schema:
+ *           type: boolean
+ *         description: Permitir reserva online
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Número da página
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *         description: Itens por página
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [name, duration, price, category, createdAt, updatedAt]
+ *         description: Campo para ordenação
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *         description: Ordem de classificação
+ *     responses:
+ *       200:
+ *         description: Lista de tipos de agendamento retornada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     appointmentTypes:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/AppointmentType'
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         page:
+ *                           type: integer
+ *                         limit:
+ *                           type: integer
+ *                         total:
+ *                           type: integer
+ *                         pages:
+ *                           type: integer
+ *       400:
+ *         description: Parâmetros inválidos
+ *       401:
+ *         description: Não autorizado
+ */
 router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) => {
     try {
         const errors = validationResult(req);
@@ -280,7 +447,46 @@ router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) =>
 });
 
 // Get appointment type statistics
-router.get('/stats', 
+/**
+ * @swagger
+ * /api/appointment-types/stats:
+ *   get:
+ *     summary: Estatísticas de tipos de agendamento
+ *     description: Retorna estatísticas dos tipos de agendamento da clínica
+ *     tags: [Appointment Types]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Estatísticas retornadas com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalTypes:
+ *                       type: integer
+ *                     activeTypes:
+ *                       type: integer
+ *                     inactiveTypes:
+ *                       type: integer
+ *                     typesByCategory:
+ *                       type: object
+ *                       additionalProperties:
+ *                         type: integer
+ *                     onlineBookingTypes:
+ *                       type: integer
+ *       401:
+ *         description: Não autorizado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.get('/stats',
     authorize('super_admin', 'admin', 'manager'),
     async (req: AuthenticatedRequest, res) => {
         try {
@@ -308,6 +514,44 @@ router.get('/stats',
 );
 
 // Get appointment types by category
+/**
+ * @swagger
+ * /api/appointment-types/category/{category}:
+ *   get:
+ *     summary: Buscar tipos de agendamento por categoria
+ *     description: Retorna tipos de agendamento de uma categoria específica
+ *     tags: [Appointment Types]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: category
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [consultation, cleaning, treatment, surgery, emergency]
+ *         description: Categoria dos tipos de agendamento
+ *     responses:
+ *       200:
+ *         description: Tipos de agendamento retornados com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/AppointmentType'
+ *       400:
+ *         description: Categoria inválida
+ *       401:
+ *         description: Não autorizado
+ *       500:
+ *         description: Erro interno do servidor
+ */
 router.get('/category/:category', async (req: AuthenticatedRequest, res) => {
     try {
         if (!req.user?.clinicId) {
@@ -345,6 +589,34 @@ router.get('/category/:category', async (req: AuthenticatedRequest, res) => {
 });
 
 // Get appointment types available for online booking
+/**
+ * @swagger
+ * /api/appointment-types/online-booking:
+ *   get:
+ *     summary: Tipos de agendamento para reserva online
+ *     description: Retorna tipos de agendamento disponíveis para reserva online
+ *     tags: [Appointment Types]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Tipos de agendamento retornados com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/AppointmentType'
+ *       401:
+ *         description: Não autorizado
+ *       500:
+ *         description: Erro interno do servidor
+ */
 router.get('/online-booking', async (req: AuthenticatedRequest, res) => {
     try {
         if (!req.user?.clinicId) {
@@ -370,6 +642,41 @@ router.get('/online-booking', async (req: AuthenticatedRequest, res) => {
 });
 
 // Get specific appointment type by ID
+/**
+ * @swagger
+ * /api/appointment-types/{id}:
+ *   get:
+ *     summary: Buscar tipo de agendamento por ID
+ *     description: Retorna um tipo de agendamento específico pelo ID
+ *     tags: [Appointment Types]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do tipo de agendamento
+ *     responses:
+ *       200:
+ *         description: Tipo de agendamento encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/AppointmentType'
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Tipo de agendamento não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
 router.get('/:id', async (req: AuthenticatedRequest, res) => {
     try {
         if (!req.user?.clinicId) {
@@ -405,9 +712,54 @@ router.get('/:id', async (req: AuthenticatedRequest, res) => {
 });
 
 // Update appointment type
-router.put('/:id', 
+/**
+ * @swagger
+ * /api/appointment-types/{id}:
+ *   put:
+ *     summary: Atualizar tipo de agendamento
+ *     description: Atualiza os dados de um tipo de agendamento
+ *     tags: [Appointment Types]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do tipo de agendamento
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/AppointmentType'
+ *     responses:
+ *       200:
+ *         description: Tipo de agendamento atualizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/AppointmentType'
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Tipo de agendamento não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.put('/:id',
     authorize('super_admin', 'admin', 'manager'),
-    updateAppointmentTypeValidation, 
+    updateAppointmentTypeValidation,
     async (req: AuthenticatedRequest, res: any) => {
         try {
             const errors = validationResult(req);
@@ -455,6 +807,57 @@ router.put('/:id',
 );
 
 // Duplicate appointment type
+/**
+ * @swagger
+ * /api/appointment-types/{id}/duplicate:
+ *   post:
+ *     summary: Duplicar tipo de agendamento
+ *     description: Cria uma cópia de um tipo de agendamento existente
+ *     tags: [Appointment Types]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do tipo de agendamento a ser duplicado
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 minLength: 2
+ *                 maxLength: 100
+ *                 description: Novo nome para o tipo duplicado
+ *     responses:
+ *       201:
+ *         description: Tipo de agendamento duplicado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/AppointmentType'
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Tipo de agendamento não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
 router.post('/:id/duplicate',
     authorize('super_admin', 'admin', 'manager'),
     body('name').optional().trim().isLength({ min: 2, max: 100 }).withMessage('Nome deve ter entre 2 e 100 caracteres'),
@@ -498,7 +901,44 @@ router.post('/:id/duplicate',
 );
 
 // Reactivate appointment type
-router.patch('/:id/reactivate', 
+/**
+ * @swagger
+ * /api/appointment-types/{id}/reactivate:
+ *   patch:
+ *     summary: Reativar tipo de agendamento
+ *     description: Reativa um tipo de agendamento inativo
+ *     tags: [Appointment Types]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do tipo de agendamento
+ *     responses:
+ *       200:
+ *         description: Tipo de agendamento reativado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/AppointmentType'
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Tipo de agendamento inativo não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.patch('/:id/reactivate',
     authorize('super_admin', 'admin', 'manager'),
     async (req: AuthenticatedRequest, res) => {
         try {
@@ -537,7 +977,42 @@ router.patch('/:id/reactivate',
 );
 
 // Delete appointment type (soft delete)
-router.delete('/:id', 
+/**
+ * @swagger
+ * /api/appointment-types/{id}:
+ *   delete:
+ *     summary: Excluir tipo de agendamento
+ *     description: Exclui um tipo de agendamento (soft delete)
+ *     tags: [Appointment Types]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do tipo de agendamento
+ *     responses:
+ *       200:
+ *         description: Tipo de agendamento excluído com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Tipo de agendamento não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.delete('/:id',
     authorize('super_admin', 'admin'),
     async (req: AuthenticatedRequest, res) => {
         try {

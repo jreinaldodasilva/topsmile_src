@@ -25,5 +25,7 @@ function error(...args: any[]) {
   }
 }
 
-export default { debug, info, warn, error };
+const logger = { debug, info, warn, error };
+
+export default logger;
 export { debug, info, warn, error };

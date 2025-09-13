@@ -1,325 +1,529 @@
-// src/components/Admin/Dashboard/Dashboard.tsx - Updated for Backend Integration
-import React, { useEffect } from 'react';
-import { useAuth } from '../../../contexts/AuthContext';
-import { useDashboard } from '../../../hooks/useApiState';
+// src/components/Admin/Dashboard/EnhancedDashboard.tsx
+import React, { useState, useEffect } from 'react';
+import Button from '../../UI/Button/Button';
 import './Dashboard.css';
 
-const Dashboard: React.FC = () => {
-  const { user, logout } = useAuth();
-  const { stats, loading, error, fetchDashboardData, reset } = useDashboard();
+interface DashboardStats {
+  totalPatients: number;
+  todayAppointments: number;
+  monthlyRevenue: number;
+  satisfaction: number;
+  trends: {
+    patients: number;
+    appointments: number;
+    revenue: number;
+    satisfaction: number;
+  };
+}
 
+interface Appointment {
+  id: string;
+  patientName: string;
+  time: string;
+  type: string;
+  status: 'scheduled' | 'in-progress' | 'completed' | 'cancelled';
+}
+
+interface RecentPatient {
+  id: string;
+  name: string;
+  lastVisit: Date;
+  nextAppointment?: Date;
+  status: 'active' | 'inactive';
+  avatar?: string;
+}
+
+interface Task {
+  id: string;
+  title: string;
+  priority: 'high' | 'medium' | 'low';
+  dueDate: Date;
+  completed: boolean;
+}
+
+const EnhancedDashboard: React.FC = () => {
+  const [stats, setStats] = useState<DashboardStats>({
+    totalPatients: 0,
+    todayAppointments: 0,
+    monthlyRevenue: 0,
+    satisfaction: 0,
+    trends: { patients: 0, appointments: 0, revenue: 0, satisfaction: 0 }
+  });
+  
+  const [upcomingAppointments, setUpcomingAppointments] = useState<Appointment[]>([]);
+  const [recentPatients, setRecentPatients] = useState<RecentPatient[]>([]);
+  const [pendingTasks, setPendingTasks] = useState<Task[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Simulate data loading
   useEffect(() => {
-    fetchDashboardData();
+    const loadDashboardData = async () => {
+      setIsLoading(true);
+      
+      // Simulate API calls
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setStats({
+        totalPatients: 1247,
+        todayAppointments: 12,
+        monthlyRevenue: 45680,
+        satisfaction: 4.8,
+        trends: {
+          patients: 12,
+          appointments: 8,
+          revenue: 15,
+          satisfaction: 5
+        }
+      });
 
-    // Set up auto-refresh every 5 minutes
-    const interval = setInterval(fetchDashboardData, 5 * 60 * 1000);
+      setUpcomingAppointments([
+        {
+          id: '1',
+          patientName: 'Maria Silva',
+          time: '09:00',
+          type: 'Limpeza',
+          status: 'scheduled'
+        },
+        {
+          id: '2',
+          patientName: 'João Santos',
+          time: '10:30',
+          type: 'Consulta',
+          status: 'in-progress'
+        },
+        {
+          id: '3',
+          patientName: 'Ana Costa',
+          time: '14:00',
+          type: 'Tratamento',
+          status: 'scheduled'
+        }
+      ]);
 
-    return () => clearInterval(interval);
-  }, [fetchDashboardData]);
+      setRecentPatients([
+        {
+          id: '1',
+          name: 'Carlos Oliveira',
+          lastVisit: new Date('2024-01-15'),
+          nextAppointment: new Date('2024-02-20'),
+          status: 'active'
+        },
+        {
+          id: '2',
+          name: 'Lucia Ferreira',
+          lastVisit: new Date('2024-01-10'),
+          status: 'inactive'
+        }
+      ]);
 
-  const handleLogout = async () => {
-    await logout();
+      setPendingTasks([
+        {
+          id: '1',
+          title: 'Confirmar consulta de amanhã',
+          priority: 'high',
+          dueDate: new Date(),
+          completed: false
+        },
+        {
+          id: '2',
+          title: 'Atualizar fichas médicas',
+          priority: 'medium',
+          dueDate: new Date('2024-02-25'),
+          completed: false
+        }
+      ]);
+
+      setIsLoading(false);
+    };
+
+    loadDashboardData();
+  }, []);
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL'
+    }).format(value);
   };
 
-  const handleRetry = () => {
-    reset();
-    fetchDashboardData();
+  const formatDate = (date: Date) => {
+    return new Intl.DateTimeFormat('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }).format(date);
   };
 
-  if (loading && !stats) {
+  const getTrendIcon = (trend: number) => {
+    if (trend > 0) {
+      return (
+        <svg className="dashboard__trend-icon dashboard__trend-icon--up" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M3.293 9.707a1 1 0 010-1.414l6-6a1 1 0 011.414 0l6 6a1 1 0 01-1.414 1.414L11 5.414V17a1 1 0 11-2 0V5.414L4.707 9.707a1 1 0 01-1.414 0z" clipRule="evenodd" />
+        </svg>
+      );
+    } else if (trend < 0) {
+      return (
+        <svg className="dashboard__trend-icon dashboard__trend-icon--down" viewBox="0 0 20 20" fill="currentColor">
+          <path fillRule="evenodd" d="M16.707 10.293a1 1 0 010 1.414l-6 6a1 1 0 01-1.414 0l-6-6a1 1 0 111.414-1.414L9 14.586V3a1 1 0 012 0v11.586l4.293-4.293a1 1 0 011.414 0z" clipRule="evenodd" />
+        </svg>
+      );
+    }
     return (
-      <div className="dashboard-loading">
-        <div className="loading-spinner">Carregando dashboard...</div>
+      <svg className="dashboard__trend-icon dashboard__trend-icon--neutral" viewBox="0 0 20 20" fill="currentColor">
+        <path fillRule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+      </svg>
+    );
+  };
+
+  const getStatusColor = (status: string) => {
+    const colors = {
+      scheduled: 'dashboard__status--scheduled',
+      'in-progress': 'dashboard__status--in-progress',
+      completed: 'dashboard__status--completed',
+      cancelled: 'dashboard__status--cancelled',
+      active: 'dashboard__status--active',
+      inactive: 'dashboard__status--inactive'
+    };
+    return colors[status as keyof typeof colors] || '';
+  };
+
+  const getPriorityColor = (priority: string) => {
+    const colors = {
+      high: 'dashboard__priority--high',
+      medium: 'dashboard__priority--medium',
+      low: 'dashboard__priority--low'
+    };
+    return colors[priority as keyof typeof colors] || '';
+  };
+
+  if (isLoading) {
+    return (
+      <div className="dashboard">
+        <div className="container">
+          <div className="dashboard__loading">
+            <div className="dashboard__loading-content">
+              <div className="loading-shimmer dashboard__loading-header"></div>
+              <div className="dashboard__loading-grid">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="loading-shimmer dashboard__loading-card"></div>
+                ))}
+              </div>
+              <div className="dashboard__loading-widgets">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="loading-shimmer dashboard__loading-widget"></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
-
-  if (error && !stats) {
-    return (
-      <div className="dashboard-error">
-        <h2>Erro ao carregar dashboard</h2>
-        <p>{error}</p>
-        <button onClick={handleRetry}>Tentar novamente</button>
-      </div>
-    );
-  }
-
-  // UPDATED: Handle new backend data structure
-  const safeStats = stats || {
-    contacts: { 
-      total: 0, 
-      byStatus: [], 
-      bySource: [], 
-      recentCount: 0 
-    },
-    summary: { 
-      totalContacts: 0, 
-      newThisWeek: 0, 
-      conversionRate: 0,
-      revenue: 'R$ 0' 
-    },
-    user: { 
-      name: user?.name || 'Usuário', 
-      role: user?.role || 'admin' 
-    }
-  };
-
-  // Helper function to calculate conversion rate
-  const getConversionRate = () => {
-    if (!safeStats.contacts.byStatus.length || safeStats.contacts.total === 0) {
-      return 0;
-    }
-    
-    const convertedCount = safeStats.contacts.byStatus.find(
-      (s: { _id: string; count: number }) => s._id === 'converted'
-    )?.count || 0;
-    
-    return Math.round((convertedCount / safeStats.contacts.total) * 100);
-  };
-
-  // Helper function to get status count
-  const getStatusCount = (status: string): number => {
-    return safeStats.contacts.byStatus.find(
-      (s: { _id: string; count: number }) => s._id === status
-    )?.count || 0;
-  };
 
   return (
     <div className="dashboard">
-      <header className="dashboard-header">
-        <div className="header-content">
-          <div className="header-info">
-            <h1>Dashboard TopSmile</h1>
-            <p>
-              Bem-vindo, {safeStats.user.name} ({safeStats.user.role})
-              {loading && <span className="loading-indicator"> • Atualizando...</span>}
+      <div className="container">
+        {/* Header */}
+        <div className="dashboard__header">
+          <div className="dashboard__title-section">
+            <h1 className="dashboard__title">Dashboard</h1>
+            <p className="dashboard__subtitle">
+              Bem-vindo de volta! Aqui está um resumo do seu consultório.
             </p>
           </div>
-          <div className="header-actions">
-            <button onClick={handleLogout} className="logout-button">
-              Sair
-            </button>
+          <div className="dashboard__actions">
+            <Button 
+              variant="outline" 
+              onClick={() => window.location.reload()}
+              size="sm"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
+              </svg>
+              Atualizar
+            </Button>
+            <Button variant="primary" size="sm">
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
+              </svg>
+              Nova Consulta
+            </Button>
           </div>
         </div>
-      </header>
 
-      <main className="dashboard-content">
-        {error && stats && (
-          <div className="error-banner">
-            <span>⚠️ Erro ao atualizar dados: {error}</span>
-            <button onClick={handleRetry} className="retry-button">Tentar novamente</button>
+        {/* Stats Cards */}
+        <div className="dashboard__stats">
+          <div className="dashboard__stat-card">
+            <div className="dashboard__stat-icon dashboard__stat-icon--patients">
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z" />
+              </svg>
+            </div>
+            <div className="dashboard__stat-content">
+              <div className="dashboard__stat-header">
+                <h3 className="dashboard__stat-title">Total de Pacientes</h3>
+                <div className="dashboard__stat-trend">
+                  {getTrendIcon(stats.trends.patients)}
+                  <span className={stats.trends.patients > 0 ? 'dashboard__trend-value--positive' : 'dashboard__trend-value--negative'}>
+                    {Math.abs(stats.trends.patients)}%
+                  </span>
+                </div>
+              </div>
+              <div className="dashboard__stat-value">{stats.totalPatients.toLocaleString()}</div>
+              <p className="dashboard__stat-description">vs mês anterior</p>
+            </div>
           </div>
-        )}
 
-        {/* UPDATED: Stats overview with new backend data */}
-        <section className="stats-overview">
-          <div className="stat-card">
-            <h3>Total de Contatos</h3>
-            <div className="stat-value">
-              {safeStats.summary.totalContacts.toLocaleString('pt-BR')}
+          <div className="dashboard__stat-card">
+            <div className="dashboard__stat-icon dashboard__stat-icon--appointments">
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="dashboard__stat-content">
+              <div className="dashboard__stat-header">
+                <h3 className="dashboard__stat-title">Consultas Hoje</h3>
+                <div className="dashboard__stat-trend">
+                  {getTrendIcon(stats.trends.appointments)}
+                  <span className={stats.trends.appointments > 0 ? 'dashboard__trend-value--positive' : 'dashboard__trend-value--negative'}>
+                    {Math.abs(stats.trends.appointments)}%
+                  </span>
+                </div>
+              </div>
+              <div className="dashboard__stat-value">{stats.todayAppointments}</div>
+              <p className="dashboard__stat-description">esta semana</p>
             </div>
           </div>
-          
-          <div className="stat-card">
-            <h3>Novos esta Semana</h3>
-            <div className="stat-value">
-              {safeStats.summary.newThisWeek.toLocaleString('pt-BR')}
-            </div>
-          </div>
-          
-          <div className="stat-card">
-            <h3>Taxa de Conversão</h3>
-            <div className="stat-value">
-              {getConversionRate()}%
-            </div>
-          </div>
-          
-          <div className="stat-card">
-            <h3>Receita do Mês</h3>
-            <div className="stat-value">
-              {safeStats.summary.revenue || 'R$ 0'}
-            </div>
-          </div>
-        </section>
 
-        {/* UPDATED: Stats details with backend data structure */}
-        <section className="stats-details">
-          <div className="chart-container">
-            <h3>Contatos por Status</h3>
-            <div className="status-list">
-              {safeStats.contacts.byStatus.length > 0 ? (
-                safeStats.contacts.byStatus.map((item: { _id: string; count: number }) => (
-                  <div key={item._id} className="status-item">
-                    <span className="status-name">
-                      {getStatusLabel(item._id)}
-                    </span>
-                    <span className="status-count">{item.count}</span>
-                  </div>
-                ))
+          <div className="dashboard__stat-card">
+            <div className="dashboard__stat-icon dashboard__stat-icon--revenue">
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z" />
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.51-1.31c-.562-.649-1.413-1.076-2.353-1.253V5z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="dashboard__stat-content">
+              <div className="dashboard__stat-header">
+                <h3 className="dashboard__stat-title">Receita Mensal</h3>
+                <div className="dashboard__stat-trend">
+                  {getTrendIcon(stats.trends.revenue)}
+                  <span className={stats.trends.revenue > 0 ? 'dashboard__trend-value--positive' : 'dashboard__trend-value--negative'}>
+                    {Math.abs(stats.trends.revenue)}%
+                  </span>
+                </div>
+              </div>
+              <div className="dashboard__stat-value">{formatCurrency(stats.monthlyRevenue)}</div>
+              <p className="dashboard__stat-description">este mês</p>
+            </div>
+          </div>
+
+          <div className="dashboard__stat-card">
+            <div className="dashboard__stat-icon dashboard__stat-icon--satisfaction">
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM7 9a1 1 0 100-2 1 1 0 000 2zm7-1a1 1 0 11-2 0 1 1 0 012 0zm-.464 5.535a1 1 0 10-1.415-1.414 3 3 0 01-4.242 0 1 1 0 00-1.415 1.414 5 5 0 007.072 0z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="dashboard__stat-content">
+              <div className="dashboard__stat-header">
+                <h3 className="dashboard__stat-title">Satisfação</h3>
+                <div className="dashboard__stat-trend">
+                  {getTrendIcon(stats.trends.satisfaction)}
+                  <span className={stats.trends.satisfaction > 0 ? 'dashboard__trend-value--positive' : 'dashboard__trend-value--negative'}>
+                    {Math.abs(stats.trends.satisfaction)}%
+                  </span>
+                </div>
+              </div>
+              <div className="dashboard__stat-value">{stats.satisfaction}/5</div>
+              <p className="dashboard__stat-description">avaliação média</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Widgets */}
+        <div className="dashboard__widgets">
+          {/* Upcoming Appointments */}
+          <div className="dashboard__widget">
+            <div className="dashboard__widget-header">
+              <h3 className="dashboard__widget-title">Próximas Consultas</h3>
+              <Button variant="ghost" size="sm">Ver todas</Button>
+            </div>
+            <div className="dashboard__widget-content">
+              {upcomingAppointments.length > 0 ? (
+                <div className="dashboard__appointments-list">
+                  {upcomingAppointments.map(appointment => (
+                    <div key={appointment.id} className="dashboard__appointment-item">
+                      <div className="dashboard__appointment-time">
+                        {appointment.time}
+                      </div>
+                      <div className="dashboard__appointment-details">
+                        <h4 className="dashboard__appointment-patient">{appointment.patientName}</h4>
+                        <p className="dashboard__appointment-type">{appointment.type}</p>
+                      </div>
+                      <div className={`dashboard__appointment-status ${getStatusColor(appointment.status)}`}>
+                        {appointment.status === 'scheduled' && 'Agendada'}
+                        {appointment.status === 'in-progress' && 'Em andamento'}
+                        {appointment.status === 'completed' && 'Concluída'}
+                        {appointment.status === 'cancelled' && 'Cancelada'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <div className="empty-state">
-                  <p>Nenhum contato encontrado</p>
+                <div className="dashboard__empty-state">
+                  <p>Nenhuma consulta agendada para hoje</p>
                 </div>
               )}
             </div>
           </div>
 
-          <div className="chart-container">
-            <h3>Origem dos Contatos</h3>
-            <div className="source-list">
-              {safeStats.contacts.bySource.length > 0 ? (
-                safeStats.contacts.bySource.map((item: { _id: string; count: number }) => (
-                  <div key={item._id} className="source-item">
-                    <span className="source-name">
-                      {getSourceLabel(item._id)}
-                    </span>
-                    <span className="source-count">{item.count}</span>
-                  </div>
-                ))
+          {/* Recent Patients */}
+          <div className="dashboard__widget">
+            <div className="dashboard__widget-header">
+              <h3 className="dashboard__widget-title">Pacientes Recentes</h3>
+              <Button variant="ghost" size="sm">Ver todos</Button>
+            </div>
+            <div className="dashboard__widget-content">
+              {recentPatients.length > 0 ? (
+                <div className="dashboard__patients-list">
+                  {recentPatients.map(patient => (
+                    <div key={patient.id} className="dashboard__patient-item">
+                      <div className="dashboard__patient-avatar">
+                        {patient.avatar ? (
+                          <img src={patient.avatar} alt="" />
+                        ) : (
+                          <div className="dashboard__patient-avatar-placeholder">
+                            {patient.name.split(' ').map(n => n[0]).join('').slice(0, 2)}
+                          </div>
+                        )}
+                      </div>
+                      <div className="dashboard__patient-details">
+                        <h4 className="dashboard__patient-name">{patient.name}</h4>
+                        <p className="dashboard__patient-info">
+                          Última visita: {formatDate(patient.lastVisit)}
+                        </p>
+                        {patient.nextAppointment && (
+                          <p className="dashboard__patient-info">
+                            Próxima: {formatDate(patient.nextAppointment)}
+                          </p>
+                        )}
+                      </div>
+                      <div className={`dashboard__patient-status ${getStatusColor(patient.status)}`}>
+                        {patient.status === 'active' ? 'Ativo' : 'Inativo'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               ) : (
-                <div className="empty-state">
-                  <p>Nenhuma origem encontrada</p>
+                <div className="dashboard__empty-state">
+                  <p>Nenhum paciente recente</p>
                 </div>
               )}
             </div>
           </div>
-        </section>
 
-        {/* UPDATED: Enhanced actions section with navigation to all modules */}
-        <section className="actions-section">
-          <h3>Módulos do Sistema</h3>
-          <div className="modules-grid">
-            <div className="module-card">
-              <div className="module-icon contacts">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                </svg>
-              </div>
-              <div className="module-info">
-                <h4>Gestão de Contatos</h4>
-                <p>{safeStats.contacts.total} contatos cadastrados</p>
-                <button
-                  className="module-button"
-                  onClick={() => window.location.href = '/admin/contacts'}
-                >
-                  Gerenciar Contatos
-                </button>
-              </div>
+          {/* Pending Tasks */}
+          <div className="dashboard__widget">
+            <div className="dashboard__widget-header">
+              <h3 className="dashboard__widget-title">Tarefas Pendentes</h3>
+              <Button variant="ghost" size="sm">Ver todas</Button>
             </div>
-
-            <div className="module-card">
-              <div className="module-icon patients">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </div>
-              <div className="module-info">
-                <h4>Gestão de Pacientes</h4>
-                <p>Cadastro e histórico médico</p>
-                <button
-                  className="module-button"
-                  onClick={() => window.location.href = '/admin/patients'}
-                >
-                  Gerenciar Pacientes
-                </button>
-              </div>
-            </div>
-
-            <div className="module-card">
-              <div className="module-icon providers">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-              </div>
-              <div className="module-info">
-                <h4>Gestão de Profissionais</h4>
-                <p>Dentistas e especialistas</p>
-                <button
-                  className="module-button"
-                  onClick={() => window.location.href = '/admin/providers'}
-                >
-                  Gerenciar Profissionais
-                </button>
-              </div>
-            </div>
-
-            <div className="module-card">
-              <div className="module-icon appointments">
-                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <div className="module-info">
-                <h4>Agenda de Consultas</h4>
-                <p>Agendamentos e calendário</p>
-                <button
-                  className="module-button"
-                  onClick={() => window.location.href = '/admin/appointments'}
-                >
-                  Ver Agenda
-                </button>
-              </div>
+            <div className="dashboard__widget-content">
+              {pendingTasks.length > 0 ? (
+                <div className="dashboard__tasks-list">
+                  {pendingTasks.map(task => (
+                    <div key={task.id} className="dashboard__task-item">
+                      <div className="dashboard__task-checkbox">
+                        <input
+                          type="checkbox"
+                          checked={task.completed}
+                          onChange={() => {
+                            setPendingTasks(tasks => 
+                              tasks.map(t => 
+                                t.id === task.id ? { ...t, completed: !t.completed } : t
+                              )
+                            );
+                          }}
+                          aria-label={`Marcar tarefa "${task.title}" como ${task.completed ? 'pendente' : 'concluída'}`}
+                        />
+                      </div>
+                      <div className="dashboard__task-content">
+                        <h4 className={`dashboard__task-title ${task.completed ? 'dashboard__task-title--completed' : ''}`}>
+                          {task.title}
+                        </h4>
+                        <p className="dashboard__task-due-date">
+                          Prazo: {formatDate(task.dueDate)}
+                        </p>
+                      </div>
+                      <div className={`dashboard__task-priority ${getPriorityColor(task.priority)}`}>
+                        {task.priority === 'high' && 'Alta'}
+                        {task.priority === 'medium' && 'Média'}
+                        {task.priority === 'low' && 'Baixa'}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="dashboard__empty-state">
+                  <p>Nenhuma tarefa pendente</p>
+                </div>
+              )}
             </div>
           </div>
+        </div>
 
-          <div className="quick-actions">
-            <h4>Ações Rápidas</h4>
-            <div className="action-buttons">
-              <button
-                className="action-button secondary"
-                onClick={() => fetchDashboardData()}
-                disabled={loading}
-              >
-                {loading ? 'Atualizando...' : 'Atualizar Dados'}
-              </button>
-              <button 
-                className="action-button secondary"
-                onClick={() => window.location.href = '/admin/billing'}
-              >
-                Financeiro
-              </button>
-            </div>
+        {/* Quick Actions */}
+        <div className="dashboard__quick-actions">
+          <h3 className="dashboard__quick-actions-title">Ações Rápidas</h3>
+          <div className="dashboard__quick-actions-grid">
+            <Button 
+              variant="outline" 
+              className="dashboard__quick-action"
+              onClick={() => window.location.href = '/admin/patients'}
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+              </svg>
+              Novo Paciente
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              className="dashboard__quick-action"
+              onClick={() => window.location.href = '/admin/appointments'}
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
+              </svg>
+              Agendar Consulta
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              className="dashboard__quick-action"
+              onClick={() => window.location.href = '/admin/billing'}
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+                <path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd" />
+              </svg>
+              Gerar Fatura
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              className="dashboard__quick-action"
+              onClick={() => window.location.href = '/admin/reports'}
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor">
+                <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
+              </svg>
+              Relatórios
+            </Button>
           </div>
-        </section>
-
-        {/* UPDATED: Footer with user context */}
-        <section className="dashboard-footer">
-          <div className="last-updated">
-            <small>
-              Última atualização: {new Date().toLocaleString('pt-BR')}
-              {safeStats.user.clinicId && ` • Clínica ID: ${safeStats.user.clinicId}`}
-            </small>
-          </div>
-        </section>
-      </main>
+        </div>
+      </div>
     </div>
   );
 };
 
-// Helper functions for better labels
-const getStatusLabel = (status: string): string => {
-  const labels: Record<string, string> = {
-    'new': 'Novos',
-    'contacted': 'Contatados',
-    'qualified': 'Qualificados',
-    'converted': 'Convertidos',
-    'closed': 'Fechados',
-    'deleted': 'Excluídos',
-    'merged': 'Mesclados'
-  };
-  return labels[status] || status.charAt(0).toUpperCase() + status.slice(1);
-};
-
-const getSourceLabel = (source: string): string => {
-  const labels: Record<string, string> = {
-    'website_contact_form': 'Formulário do Site',
-    'phone': 'Telefone',
-    'email': 'E-mail',
-    'referral': 'Indicação',
-    'social_media': 'Redes Sociais',
-    'advertisement': 'Publicidade'
-  };
-  return labels[source] || source.charAt(0).toUpperCase() + source.slice(1);
-};
-
-export default Dashboard;
+export default EnhancedDashboard;

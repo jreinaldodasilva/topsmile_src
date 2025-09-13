@@ -1,0 +1,81 @@
+/* Test Components Page Styles */
+.test-components {
+  min-height: 100vh;
+  background-color: var(--color-bg-primary);
+  padding: var(--space-8) 0;
+}
+
+.test-components .container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-4);
+}
+
+.test-components h1 {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  text-align: center;
+  margin-bottom: var(--space-12);
+}
+
+.test-section {
+  margin-bottom: var(--space-12);
+}
+
+.test-section h2 {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-6);
+  text-align: center;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-6);
+  margin-bottom: var(--space-8);
+}
+
+.toast-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  justify-content: center;
+  margin-bottom: var(--space-8);
+}
+
+.toast-buttons > * {
+  min-width: 120px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .test-components .container {
+    padding: 0 var(--space-2);
+  }
+
+  .test-components h1 {
+    font-size: var(--font-size-2xl);
+  }
+
+  .test-section h2 {
+    font-size: var(--font-size-xl);
+  }
+
+  .cards-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  .toast-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .toast-buttons > * {
+    width: 100%;
+    max-width: 300px;
+  }
+}

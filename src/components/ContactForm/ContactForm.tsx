@@ -257,15 +257,21 @@ const ContactForm: React.FC = () => {
             value={formData.name}
             onChange={handleInputChange}
             placeholder="Nome completo *"
-            className={errors.name ? 'contact-input contact-form__input--error' : 'contact-input'}
+            className={`contact-input ${errors.name ? 'contact-form__input--error' : ''} ${formData.name && !errors.name ? 'contact-form__input--success' : ''}`}
             disabled={isSubmitting}
             maxLength={100}
             required
             aria-describedby={errors.name ? 'name-error' : undefined}
+            aria-invalid={!!errors.name}
           />
           {errors.name && (
-            <span id="name-error" className="contact-form__error" role="alert">
+            <span id="name-error" className="contact-form__error contact-form__error--shake" role="alert">
               {errors.name}
+            </span>
+          )}
+          {formData.name && !errors.name && (
+            <span className="contact-form__success" role="status">
+              ✓ Nome válido
             </span>
           )}
         </div>

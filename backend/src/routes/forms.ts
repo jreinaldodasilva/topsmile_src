@@ -1,7 +1,7 @@
 // backend/src/routes/forms.ts
 import express from 'express';
 import { authenticate, authorize, AuthenticatedRequest } from '../middleware/auth';
-import { body, query, validationResult } from 'express-validator';
+import { body, validationResult } from 'express-validator';
 
 const router = express.Router();
 
@@ -187,6 +187,46 @@ const responseValidation = [
 // FORM TEMPLATES ROUTES
 
 // Get all form templates
+/**
+ * @swagger
+ * /api/forms/templates:
+ *   get:
+ *     summary: Listar templates de formulário
+ *     description: Retorna lista de templates de formulário com filtros opcionais
+ *     tags: [Forms]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *           enum: [medical, assessment, feedback, intake, consent]
+ *         description: Filtrar por categoria
+ *       - in: query
+ *         name: isActive
+ *         schema:
+ *           type: boolean
+ *         description: Filtrar por status ativo
+ *     responses:
+ *       200:
+ *         description: Templates retornados com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/FormTemplate'
+ *       401:
+ *         description: Não autorizado
+ *       500:
+ *         description: Erro interno do servidor
+ */
 router.get('/templates', async (req: AuthenticatedRequest, res) => {
   try {
     const { category, isActive } = req.query;
@@ -218,6 +258,41 @@ router.get('/templates', async (req: AuthenticatedRequest, res) => {
 });
 
 // Get specific form template
+/**
+ * @swagger
+ * /api/forms/templates/{id}:
+ *   get:
+ *     summary: Buscar template de formulário por ID
+ *     description: Retorna um template de formulário específico pelo ID
+ *     tags: [Forms]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do template
+ *     responses:
+ *       200:
+ *         description: Template encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/FormTemplate'
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Template não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
 router.get('/templates/:id', async (req: AuthenticatedRequest, res) => {
   try {
     const template = mockFormTemplates.find(t => t._id === req.params.id);
@@ -242,8 +317,41 @@ router.get('/templates/:id', async (req: AuthenticatedRequest, res) => {
   }
 });
 
-// Create form template
-router.post('/templates', 
+/**
+ * @swagger
+ * /api/forms/templates:
+ *   post:
+ *     summary: Criar template de formulário
+ *     description: Cria um novo template de formulário
+ *     tags: [Forms]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/FormTemplate'
+ *     responses:
+ *       201:
+ *         description: Template criado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/FormTemplate'
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Não autorizado
+ */
+router.post('/templates',
   authorize('super_admin', 'admin', 'manager'),
   templateValidation,
   async (req: AuthenticatedRequest, res: any) => {
@@ -283,7 +391,49 @@ router.post('/templates',
   }
 );
 
-// Update form template
+/**
+ * @swagger
+ * /api/forms/templates/{id}:
+ *   patch:
+ *     summary: Atualizar template de formulário
+ *     description: Atualiza os dados de um template de formulário
+ *     tags: [Forms]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do template
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/FormTemplate'
+ *     responses:
+ *       200:
+ *         description: Template atualizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/FormTemplate'
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Template não encontrado
+ */
 router.patch('/templates/:id',
   authorize('super_admin', 'admin', 'manager'),
   templateValidation.map(validation => validation.optional()),
@@ -329,7 +479,39 @@ router.patch('/templates/:id',
   }
 );
 
-// Delete form template
+/**
+ * @swagger
+ * /api/forms/templates/{id}:
+ *   delete:
+ *     summary: Excluir template de formulário
+ *     description: Exclui um template de formulário
+ *     tags: [Forms]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do template
+ *     responses:
+ *       200:
+ *         description: Template excluído com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Template não encontrado
+ */
 router.delete('/templates/:id',
   authorize('super_admin', 'admin'),
   async (req: AuthenticatedRequest, res) => {
@@ -363,6 +545,55 @@ router.delete('/templates/:id',
 // FORM RESPONSES ROUTES
 
 // Get all form responses
+/**
+ * @swagger
+ * /api/forms/responses:
+ *   get:
+ *     summary: Listar respostas de formulário
+ *     description: Retorna lista de respostas de formulário com filtros opcionais
+ *     tags: [Forms]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: templateId
+ *         schema:
+ *           type: string
+ *         description: Filtrar por ID do template
+ *       - in: query
+ *         name: patientId
+ *         schema:
+ *           type: string
+ *         description: Filtrar por ID do paciente
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Data inicial
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *         description: Data final
+ *     responses:
+ *       200:
+ *         description: Respostas retornadas com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/FormResponse'
+ *       401:
+ *         description: Não autorizado
+ */
 router.get('/responses', async (req: AuthenticatedRequest, res) => {
   try {
     const { templateId, patientId, startDate, endDate } = req.query;
@@ -402,7 +633,39 @@ router.get('/responses', async (req: AuthenticatedRequest, res) => {
   }
 });
 
-// Get specific form response
+/**
+ * @swagger
+ * /api/forms/responses/{id}:
+ *   get:
+ *     summary: Buscar resposta de formulário por ID
+ *     description: Retorna uma resposta de formulário específica pelo ID
+ *     tags: [Forms]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID da resposta
+ *     responses:
+ *       200:
+ *         description: Resposta encontrada
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/FormResponse'
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Resposta não encontrada
+ */
 router.get('/responses/:id', async (req: AuthenticatedRequest, res) => {
   try {
     const response = mockFormResponses.find(r => r._id === req.params.id);
@@ -427,7 +690,38 @@ router.get('/responses/:id', async (req: AuthenticatedRequest, res) => {
   }
 });
 
-// Create form response
+/**
+ * @swagger
+ * /api/forms/responses:
+ *   post:
+ *     summary: Criar resposta de formulário
+ *     description: Cria uma nova resposta de formulário
+ *     tags: [Forms]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/FormResponse'
+ *     responses:
+ *       201:
+ *         description: Resposta criada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/FormResponse'
+ *       400:
+ *         description: Dados inválidos
+ */
 router.post('/responses',
   responseValidation,
   async (req: AuthenticatedRequest, res: any) => {
@@ -477,7 +771,49 @@ router.post('/responses',
   }
 );
 
-// Update form response
+/**
+ * @swagger
+ * /api/forms/responses/{id}:
+ *   patch:
+ *     summary: Atualizar resposta de formulário
+ *     description: Atualiza os dados de uma resposta de formulário
+ *     tags: [Forms]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID da resposta
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/FormResponse'
+ *     responses:
+ *       200:
+ *         description: Resposta atualizada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/FormResponse'
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Resposta não encontrada
+ */
 router.patch('/responses/:id',
   responseValidation.map(validation => validation.optional()),
   async (req: AuthenticatedRequest, res: any) => {
@@ -522,7 +858,39 @@ router.patch('/responses/:id',
   }
 );
 
-// Delete form response
+/**
+ * @swagger
+ * /api/forms/responses/{id}:
+ *   delete:
+ *     summary: Excluir resposta de formulário
+ *     description: Exclui uma resposta de formulário
+ *     tags: [Forms]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID da resposta
+ *     responses:
+ *       200:
+ *         description: Resposta excluída com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Resposta não encontrada
+ */
 router.delete('/responses/:id',
   authorize('super_admin', 'admin', 'manager'),
   async (req: AuthenticatedRequest, res) => {
@@ -552,7 +920,52 @@ router.delete('/responses/:id',
   }
 );
 
-// Get form statistics
+/**
+ * @swagger
+ * /api/forms/stats:
+ *   get:
+ *     summary: Estatísticas de formulários
+ *     description: Retorna estatísticas dos formulários da clínica
+ *     tags: [Forms]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Estatísticas retornadas com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalTemplates:
+ *                       type: integer
+ *                     activeTemplates:
+ *                       type: integer
+ *                     totalResponses:
+ *                       type: integer
+ *                     responsesByTemplate:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           templateId:
+ *                             type: string
+ *                           templateTitle:
+ *                             type: string
+ *                           responseCount:
+ *                             type: integer
+ *                     recentResponses:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/FormResponse'
+ *       401:
+ *         description: Não autorizado
+ */
 router.get('/stats',
   authorize('super_admin', 'admin', 'manager'),
   async (req: AuthenticatedRequest, res) => {

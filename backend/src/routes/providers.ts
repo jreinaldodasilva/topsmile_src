@@ -347,6 +347,40 @@ const workingHoursValidation = [
 ];
 
 // Create a new provider
+/**
+ * @swagger
+ * /api/providers:
+ *   post:
+ *     summary: Criar novo profissional
+ *     description: Cria um novo profissional na clínica
+ *     tags: [Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Provider'
+ *     responses:
+ *       201:
+ *         description: Profissional criado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/Provider'
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Não autorizado
+ */
 router.post('/', 
     authorize('super_admin', 'admin', 'manager'),
     createProviderValidation, 
@@ -391,6 +425,91 @@ router.post('/',
 );
 
 // Get all providers with search and pagination
+/**
+ * @swagger
+ * /api/providers:
+ *   get:
+ *     summary: Listar profissionais
+ *     description: Retorna lista de profissionais com filtros de busca e paginação
+ *     tags: [Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Termo de busca
+ *       - in: query
+ *         name: isActive
+ *         schema:
+ *           type: boolean
+ *         description: Status ativo
+ *       - in: query
+ *         name: specialties
+ *         schema:
+ *           type: array
+ *           items:
+ *             type: string
+ *         description: Especialidades
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Número da página
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *         description: Itens por página
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [name, email, createdAt, updatedAt]
+ *         description: Campo para ordenação
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *         description: Ordem de classificação
+ *     responses:
+ *       200:
+ *         description: Lista de profissionais retornada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     providers:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Provider'
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         page:
+ *                           type: integer
+ *                         limit:
+ *                           type: integer
+ *                         total:
+ *                           type: integer
+ *                         pages:
+ *                           type: integer
+ *       400:
+ *         description: Parâmetros inválidos
+ *       401:
+ *         description: Não autorizado
+ */
 router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) => {
     try {
         const errors = validationResult(req);
@@ -446,7 +565,44 @@ router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) =>
 });
 
 // Get provider statistics
-router.get('/stats', 
+/**
+ * @swagger
+ * /api/providers/stats:
+ *   get:
+ *     summary: Estatísticas de profissionais
+ *     description: Retorna estatísticas dos profissionais da clínica
+ *     tags: [Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Estatísticas retornadas com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalProviders:
+ *                       type: integer
+ *                     activeProviders:
+ *                       type: integer
+ *                     inactiveProviders:
+ *                       type: integer
+ *                     providersBySpecialty:
+ *                       type: object
+ *                       additionalProperties:
+ *                         type: integer
+ *       401:
+ *         description: Não autorizado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.get('/stats',
     authorize('super_admin', 'admin', 'manager'),
     async (req: AuthenticatedRequest, res) => {
         try {
@@ -474,6 +630,41 @@ router.get('/stats',
 );
 
 // Get specific provider by ID
+/**
+ * @swagger
+ * /api/providers/{id}:
+ *   get:
+ *     summary: Buscar profissional por ID
+ *     description: Retorna um profissional específico pelo ID
+ *     tags: [Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do profissional
+ *     responses:
+ *       200:
+ *         description: Profissional encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/Provider'
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Profissional não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
 router.get('/:id', async (req: AuthenticatedRequest, res) => {
     try {
         if (!req.user?.clinicId) {
@@ -506,9 +697,54 @@ router.get('/:id', async (req: AuthenticatedRequest, res) => {
 });
 
 // Update provider
-router.patch('/:id', 
+/**
+ * @swagger
+ * /api/providers/{id}:
+ *   patch:
+ *     summary: Atualizar profissional
+ *     description: Atualiza os dados de um profissional
+ *     tags: [Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do profissional
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Provider'
+ *     responses:
+ *       200:
+ *         description: Profissional atualizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/Provider'
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Profissional não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.patch('/:id',
     authorize('super_admin', 'admin', 'manager'),
-    updateProviderValidation, 
+    updateProviderValidation,
     async (req: AuthenticatedRequest, res: any) => {
         try {
             const errors = validationResult(req);
@@ -556,7 +792,116 @@ router.patch('/:id',
 );
 
 // Update working hours
-router.patch('/:id/working-hours', 
+/**
+ * @swagger
+ * /api/providers/{id}/working-hours:
+ *   patch:
+ *     summary: Atualizar horários de trabalho
+ *     description: Atualiza os horários de trabalho de um profissional
+ *     tags: [Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do profissional
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               monday:
+ *                 type: object
+ *                 properties:
+ *                   start:
+ *                     type: string
+ *                   end:
+ *                     type: string
+ *                   isWorking:
+ *                     type: boolean
+ *               tuesday:
+ *                 type: object
+ *                 properties:
+ *                   start:
+ *                     type: string
+ *                   end:
+ *                     type: string
+ *                   isWorking:
+ *                     type: boolean
+ *               wednesday:
+ *                 type: object
+ *                 properties:
+ *                   start:
+ *                     type: string
+ *                   end:
+ *                     type: string
+ *                   isWorking:
+ *                     type: boolean
+ *               thursday:
+ *                 type: object
+ *                 properties:
+ *                   start:
+ *                     type: string
+ *                   end:
+ *                     type: string
+ *                   isWorking:
+ *                     type: boolean
+ *               friday:
+ *                 type: object
+ *                 properties:
+ *                   start:
+ *                     type: string
+ *                   end:
+ *                     type: string
+ *                   isWorking:
+ *                     type: boolean
+ *               saturday:
+ *                 type: object
+ *                 properties:
+ *                   start:
+ *                     type: string
+ *                   end:
+ *                     type: string
+ *                   isWorking:
+ *                     type: boolean
+ *               sunday:
+ *                 type: object
+ *                 properties:
+ *                   start:
+ *                     type: string
+ *                   end:
+ *                     type: string
+ *                   isWorking:
+ *                     type: boolean
+ *     responses:
+ *       200:
+ *         description: Horários atualizados com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/Provider'
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Profissional não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.patch('/:id/working-hours',
     authorize('super_admin', 'admin', 'manager'),
     workingHoursValidation,
     async (req: AuthenticatedRequest, res: any) => {
@@ -606,6 +951,56 @@ router.patch('/:id/working-hours',
 );
 
 // Update appointment types
+/**
+ * @swagger
+ * /api/providers/{id}/appointment-types:
+ *   patch:
+ *     summary: Atualizar tipos de agendamento
+ *     description: Atualiza os tipos de agendamento de um profissional
+ *     tags: [Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do profissional
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               appointmentTypes:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: Tipos de agendamento atualizados com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/Provider'
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Profissional não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
 router.patch('/:id/appointment-types',
     authorize('super_admin', 'admin', 'manager'),
     body('appointmentTypes').isArray().withMessage('Tipos de agendamento deve ser um array'),
@@ -657,7 +1052,44 @@ router.patch('/:id/appointment-types',
 );
 
 // Reactivate provider
-router.patch('/:id/reactivate', 
+/**
+ * @swagger
+ * /api/providers/{id}/reactivate:
+ *   patch:
+ *     summary: Reativar profissional
+ *     description: Reativa um profissional inativo
+ *     tags: [Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do profissional
+ *     responses:
+ *       200:
+ *         description: Profissional reativado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/Provider'
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Profissional inativo não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.patch('/:id/reactivate',
     authorize('super_admin', 'admin', 'manager'),
     async (req: AuthenticatedRequest, res) => {
         try {
@@ -693,7 +1125,42 @@ router.patch('/:id/reactivate',
 );
 
 // Delete provider (soft delete)
-router.delete('/:id', 
+/**
+ * @swagger
+ * /api/providers/{id}:
+ *   delete:
+ *     summary: Excluir profissional
+ *     description: Exclui um profissional (soft delete)
+ *     tags: [Providers]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do profissional
+ *     responses:
+ *       200:
+ *         description: Profissional excluído com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Profissional não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
+router.delete('/:id',
     authorize('super_admin', 'admin'),
     async (req: AuthenticatedRequest, res) => {
         try {

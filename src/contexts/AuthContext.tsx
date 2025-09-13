@@ -1,5 +1,5 @@
 // src/contexts/AuthContext.tsx - Updated for Backend Integration
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { apiService } from '../services/apiService';
 import { logout as httpLogout, hasTokens, getRefreshToken } from '../services/http';
@@ -13,7 +13,7 @@ interface AuthResult {
   message?: string;
 }
 
-interface AuthContextType {
+export interface AuthContextType {
   isAuthenticated: boolean;
   accessToken: string | null;
   user: User | null;
@@ -43,7 +43,7 @@ interface RegisterData {
   };
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
@@ -54,6 +54,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [logoutReason, setLogoutReason] = useState<string | null>(null);
 
   const isAuthenticated = !loading && !!accessToken && !!user;
+
+  const performLogout = useCallback(async (reason?: string) => {
+    try {
+      const refreshToken = getRefreshToken();
+
+      // Clear local state first
+      setAccessToken(null);
+      setUser(null);
+
+      // Notify backend and clear tokens
+      await httpLogout(refreshToken || undefined);
+
+      if (reason) {
+        setLogoutReason(reason);
+      }
+
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Still navigate to login even if backend call fails
+      navigate('/login');
+    }
+  }, [navigate]);
 
   // UPDATED: Enhanced initial authentication check
   useEffect(() => {
@@ -73,7 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         // Verify token with backend and get user data
         const userResponse = await apiService.auth.me();
-        
+
         if (userResponse.success && userResponse.data) {
           setAccessToken(token);
           setUser(userResponse.data);
@@ -90,7 +113,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     verifyAuth();
-  }, []);
+  }, [performLogout]);
 
   // UPDATED: Enhanced login function
   const login = async (email: string, password: string): Promise<AuthResult> => {
@@ -173,29 +196,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     await performLogout(reason);
   };
 
-  const performLogout = async (reason?: string) => {
-    try {
-      const refreshToken = getRefreshToken();
-      
-      // Clear local state first
-      setAccessToken(null);
-      setUser(null);
-      
-      // Notify backend and clear tokens
-      await httpLogout(refreshToken || undefined);
-      
-      if (reason) {
-        setLogoutReason(reason);
-      }
-      
-      navigate('/login');
-    } catch (error) {
-      console.error('Logout error:', error);
-      // Still navigate to login even if backend call fails
-      navigate('/login');
-    }
-  };
-
   // ADDED: Clear error function
   const clearError = () => {
     setError(null);
@@ -230,7 +230,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     window.addEventListener('storage', onStorageChange);
     return () => window.removeEventListener('storage', onStorageChange);
-  }, [navigate]);
+  }, [navigate, performLogout]);
 
   // Show logout reason after redirect
   useEffect(() => {
@@ -258,7 +258,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }, 5 * 60 * 1000); // Check every 5 minutes
 
     return () => clearInterval(interval);
-  }, [isAuthenticated]);
+  }, [isAuthenticated, performLogout]);
 
   const value: AuthContextType = { 
     isAuthenticated, 

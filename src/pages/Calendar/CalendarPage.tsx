@@ -4,6 +4,7 @@ import Calendar from 'react-calendar';
 import { useAuth } from '../../contexts/AuthContext';
 import { apiService } from '../../services/apiService';
 import type { Appointment, Patient, Provider, AppointmentType } from '../../types/api';
+import './CalendarPage.css';
 
 const CalendarPage: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -86,10 +87,12 @@ const CalendarPage: React.FC = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="p-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Agenda</h1>
-          <p className="text-gray-600">Faça login para visualizar sua agenda.</p>
+      <div className="calendar-page">
+        <div className="container">
+          <div className="text-center">
+            <h1 className="calendar-title">Agenda</h1>
+            <p className="calendar-subtitle">Faça login para visualizar sua agenda.</p>
+          </div>
         </div>
       </div>
     );
@@ -97,44 +100,46 @@ const CalendarPage: React.FC = () => {
 
   if (loading && appointments.length === 0) {
     return (
-      <div className="p-6">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Agenda</h1>
-          <p className="text-gray-600">Carregando agendamentos...</p>
+      <div className="calendar-page">
+        <div className="container">
+          <div className="text-center">
+            <h1 className="calendar-title">Agenda</h1>
+            <p className="calendar-subtitle">Carregando agendamentos...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="p-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Agenda</h1>
-          <p className="text-gray-600">Visualize seus agendamentos no calendário</p>
+    <div className="calendar-page">
+      <div className="container">
+        <div className="calendar-header">
+          <h1 className="calendar-title">Agenda</h1>
+          <p className="calendar-subtitle">Visualize seus agendamentos no calendário</p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <div className="flex items-center">
+          <div className="calendar-error">
+            <div className="error-content">
               <svg className="w-5 h-5 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span className="text-red-800">{error}</span>
+              <span className="error-text">{error}</span>
             </div>
-            <button 
-              onClick={() => window.location.reload()} 
-              className="mt-2 px-3 py-1 bg-red-100 text-red-800 rounded hover:bg-red-200 transition-colors"
+            <button
+              onClick={() => window.location.reload()}
+              className="error-retry"
             >
               Tentar novamente
             </button>
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="calendar-grid">
           {/* Calendar */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-sm border p-6">
+          <div className="calendar-main">
+            <div className="calendar-card">
               <Calendar
                 value={selectedDate}
                 onChange={(date) => setSelectedDate(date as Date)}
@@ -175,11 +180,11 @@ const CalendarPage: React.FC = () => {
           </div>
 
           {/* Appointments for selected date */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm border p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                Agendamentos - {selectedDate.toLocaleDateString('pt-BR', { 
-                  day: '2-digit', 
+          <div className="calendar-sidebar">
+            <div className="calendar-card">
+              <h2 className="calendar-card-title">
+                Agendamentos - {selectedDate.toLocaleDateString('pt-BR', {
+                  day: '2-digit',
                   month: 'long',
                   year: 'numeric'
                 })}

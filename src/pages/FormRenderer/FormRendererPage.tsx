@@ -1,6 +1,9 @@
-// frontend/src/components/FormRenderer.tsx
+// src/pages/FormRenderer/FormRendererPage.tsx
 import React, { useState, useEffect } from 'react';
 import { apiService, type FormTemplate } from '../../services/apiService';
+import EnhancedHeader from '../../components/Header/Header';
+import Footer from '../../components/Footer/Footer';
+import './FormRendererPage.css';
 
 interface FormRendererProps {
   templateId: string;
@@ -59,26 +62,26 @@ const FormRendererPage: React.FC<FormRendererProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!template) return;
-    
+
     try {
       setSubmitting(true);
       setError(null);
-      
+
       const result = await apiService.forms.responses.create({
         templateId,
         patientId,
         answers
       });
-      
+
       if (result.success && result.data) {
         // Reset form
         setAnswers({});
-        
+
         // Show success message
         alert('Form submitted successfully!');
-        
+
         // Call success callback
         onSubmitSuccess?.(result.data._id);
       } else {
@@ -97,68 +100,89 @@ const FormRendererPage: React.FC<FormRendererProps> = ({
 
   const isFormValid = () => {
     if (!template) return false;
-    
+
     // Check if all required questions are answered
     return template.questions.every(question => {
-      // Assuming questions have a 'required' property
-      // If not, you can modify this logic based on your template structure
-      return answers[question.id]?.trim() !== '';
+      if (question.required) {
+        return answers[question.id]?.trim() !== '';
+      }
+      return true;
     });
   };
 
   if (loading) {
     return (
-      <div className="p-4">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded mb-4"></div>
-          <div className="space-y-4">
-            {[1, 2, 3].map(i => (
-              <div key={i}>
-                <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                <div className="h-10 bg-gray-200 rounded"></div>
+      <div className="form-renderer-page">
+        <EnhancedHeader />
+        <main className="form-renderer-main">
+          <div className="container">
+            <div className="loading-skeleton">
+              <div className="skeleton-title"></div>
+              <div className="skeleton-fields">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="skeleton-field">
+                    <div className="skeleton-label"></div>
+                    <div className="skeleton-input"></div>
+                  </div>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
-        </div>
+        </main>
+        <Footer />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="p-4">
-        <div className="bg-red-50 border border-red-200 rounded-md p-4">
-          <div className="flex">
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Error</h3>
-              <div className="mt-2 text-sm text-red-700">
-                <p>{error}</p>
-              </div>
-              <div className="mt-4">
+      <div className="form-renderer-page">
+        <EnhancedHeader />
+        <main className="form-renderer-main">
+          <div className="container">
+            <div className="error-banner">
+              <div className="error-content">
+                <h3 className="error-title">Erro</h3>
+                <p className="error-message">{error}</p>
                 <button
                   onClick={() => window.location.reload()}
-                  className="bg-red-100 px-3 py-2 text-sm leading-4 font-medium text-red-800 rounded-md hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                  className="retry-button"
                 >
-                  Retry
+                  Tentar novamente
                 </button>
               </div>
             </div>
           </div>
-        </div>
+        </main>
+        <Footer />
       </div>
     );
   }
 
   if (!template) {
     return (
-      <div className="p-4">
-        <p>Form template not found.</p>
+      <div className="form-renderer-page">
+        <EnhancedHeader />
+        <main className="form-renderer-main">
+          <div className="container">
+            <div className="empty-state">
+              <h3>Formulário não encontrado</h3>
+              <p>O template do formulário solicitado não foi encontrado.</p>
+            </div>
+          </div>
+        </main>
+        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6">
+    <div className="form-renderer-page">
+      <EnhancedHeader />
+
+      <main className="form-renderer-main">
+        <div className="container">
+          <div className="form-container">
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">{template.title}</h1>
@@ -193,7 +217,11 @@ const FormRendererPage: React.FC<FormRendererProps> = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
               >
                 <option value="">Select an option...</option>
-                {/* Add options based on your question structure */}
+                {question.options?.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
             ) : (
               <input
@@ -233,6 +261,11 @@ const FormRendererPage: React.FC<FormRendererProps> = ({
           </button>
         </div>
       </form>
+          </div>
+        </div>
+      </main>
+
+      <Footer />
     </div>
   );
 };

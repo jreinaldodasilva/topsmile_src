@@ -138,6 +138,5 @@ UserSchema.methods.comparePassword = async function (candidatePassword: string):
 // Indexes
 UserSchema.index({ role: 1 });
 UserSchema.index({ clinic: 1 });
-UserSchema.index({ email: 1 });
 
 export const User = mongoose.model<IUser>('User', UserSchema);

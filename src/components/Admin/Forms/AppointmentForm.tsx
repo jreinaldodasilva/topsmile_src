@@ -60,10 +60,9 @@ const AppointmentForm: React.FC<AppointmentFormProps> = ({
       try {
         setLoadingData(true);
         
-        const [patientsResult, providersResult, appointmentTypesResult] = await Promise.all([
+        const [patientsResult, providersResult] = await Promise.all([
           apiService.patients.getAll({ isActive: true, limit: 100 }),
-          apiService.providers.getAll({ isActive: true }),
-          apiService.getFormTemplates() // Assuming appointment types are form templates
+          apiService.providers.getAll({ isActive: true })
         ]);
 
         if (patientsResult.success && patientsResult.data) {

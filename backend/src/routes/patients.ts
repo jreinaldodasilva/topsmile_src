@@ -1,6 +1,6 @@
 // backend/src/routes/patients.ts
 import express from 'express';
-import { authenticate, authorize, AuthenticatedRequest } from '../middleware/auth';
+import { authenticate, AuthenticatedRequest } from '../middleware/auth';
 import { patientService } from '../services/patientService';
 import { body, query, validationResult } from 'express-validator';
 
@@ -283,7 +283,40 @@ const searchValidation = [
         .withMessage('Ordem de classificação inválida')
 ];
 
-// Create a new patient
+/**
+ * @swagger
+ * /api/patients:
+ *   post:
+ *     summary: Criar novo paciente
+ *     description: Cria um novo paciente na clínica
+ *     tags: [Patients]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Patient'
+ *     responses:
+ *       201:
+ *         description: Paciente criado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/Patient'
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Não autorizado
+ */
 router.post('/', createPatientValidation, async (req: AuthenticatedRequest, res: any) => {
     try {
         const errors = validationResult(req);
@@ -323,7 +356,85 @@ router.post('/', createPatientValidation, async (req: AuthenticatedRequest, res:
     }
 });
 
-// Get all patients with search and pagination
+/**
+ * @swagger
+ * /api/patients:
+ *   get:
+ *     summary: Listar pacientes
+ *     description: Retorna lista de pacientes com filtros de busca e paginação
+ *     tags: [Patients]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Termo de busca
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [active, inactive]
+ *         description: Status do paciente
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Número da página
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *         description: Itens por página
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [name, email, phone, createdAt, updatedAt]
+ *         description: Campo para ordenação
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *         description: Ordem de classificação
+ *     responses:
+ *       200:
+ *         description: Lista de pacientes retornada com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     patients:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Patient'
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         page:
+ *                           type: integer
+ *                         limit:
+ *                           type: integer
+ *                         total:
+ *                           type: integer
+ *                         pages:
+ *                           type: integer
+ *       400:
+ *         description: Parâmetros inválidos
+ *       401:
+ *         description: Não autorizado
+ */
 router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) => {
     try {
         const errors = validationResult(req);
@@ -367,7 +478,45 @@ router.get('/', searchValidation, async (req: AuthenticatedRequest, res: any) =>
     }
 });
 
-// Get patient statistics
+/**
+ * @swagger
+ * /api/patients/stats:
+ *   get:
+ *     summary: Obter estatísticas de pacientes
+ *     description: Retorna estatísticas gerais dos pacientes da clínica
+ *     tags: [Patients]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Estatísticas retornadas com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     total:
+ *                       type: integer
+ *                       description: Total de pacientes
+ *                     active:
+ *                       type: integer
+ *                       description: Pacientes ativos
+ *                     inactive:
+ *                       type: integer
+ *                       description: Pacientes inativos
+ *                     newThisMonth:
+ *                       type: integer
+ *                       description: Novos pacientes este mês
+ *       401:
+ *         description: Não autorizado
+ *       500:
+ *         description: Erro interno do servidor
+ */
 router.get('/stats', async (req: AuthenticatedRequest, res) => {
     try {
         if (!req.user?.clinicId) {
@@ -392,7 +541,41 @@ router.get('/stats', async (req: AuthenticatedRequest, res) => {
     }
 });
 
-// Get specific patient by ID
+/**
+ * @swagger
+ * /api/patients/{id}:
+ *   get:
+ *     summary: Obter paciente por ID
+ *     description: Retorna os dados de um paciente específico
+ *     tags: [Patients]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do paciente
+ *     responses:
+ *       200:
+ *         description: Paciente encontrado
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/Patient'
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Paciente não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
 router.get('/:id', async (req: AuthenticatedRequest, res) => {
     try {
         if (!req.user?.clinicId) {
@@ -424,7 +607,49 @@ router.get('/:id', async (req: AuthenticatedRequest, res) => {
     }
 });
 
-// Update patient
+/**
+ * @swagger
+ * /api/patients/{id}:
+ *   patch:
+ *     summary: Atualizar paciente
+ *     description: Atualiza os dados de um paciente específico
+ *     tags: [Patients]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do paciente
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Patient'
+ *     responses:
+ *       200:
+ *         description: Paciente atualizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/Patient'
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Paciente não encontrado
+ */
 router.patch('/:id', updatePatientValidation, async (req: AuthenticatedRequest, res: any) => {
     try {
         const errors = validationResult(req);
@@ -470,8 +695,66 @@ router.patch('/:id', updatePatientValidation, async (req: AuthenticatedRequest, 
     }
 });
 
-// Update medical history
-router.patch('/:id/medical-history', 
+/**
+ * @swagger
+ * /api/patients/{id}/medical-history:
+ *   patch:
+ *     summary: Atualizar histórico médico
+ *     description: Atualiza o histórico médico de um paciente
+ *     tags: [Patients]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do paciente
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               allergies:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               medications:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               conditions:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               notes:
+ *                 type: string
+ *                 maxLength: 1000
+ *     responses:
+ *       200:
+ *         description: Histórico médico atualizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/Patient'
+ *       400:
+ *         description: Dados inválidos
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Paciente não encontrado
+ */
+router.patch('/:id/medical-history',
     body('allergies').optional().isArray().withMessage('Alergias deve ser um array'),
     body('medications').optional().isArray().withMessage('Medicamentos deve ser um array'),
     body('conditions').optional().isArray().withMessage('Condições deve ser um array'),
@@ -522,7 +805,41 @@ router.patch('/:id/medical-history',
     }
 );
 
-// Reactivate patient
+/**
+ * @swagger
+ * /api/patients/{id}/reactivate:
+ *   patch:
+ *     summary: Reativar paciente
+ *     description: Reativa um paciente que foi desativado
+ *     tags: [Patients]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do paciente
+ *     responses:
+ *       200:
+ *         description: Paciente reativado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   $ref: '#/components/schemas/Patient'
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Paciente inativo não encontrado
+ */
 router.patch('/:id/reactivate', async (req: AuthenticatedRequest, res) => {
     try {
         if (!req.user?.clinicId) {
@@ -555,7 +872,41 @@ router.patch('/:id/reactivate', async (req: AuthenticatedRequest, res) => {
     }
 });
 
-// Delete patient (soft delete)
+/**
+ * @swagger
+ * /api/patients/{id}:
+ *   delete:
+ *     summary: Excluir paciente
+ *     description: Exclui um paciente (exclusão lógica)
+ *     tags: [Patients]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do paciente
+ *     responses:
+ *       200:
+ *         description: Paciente excluído com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Não autorizado
+ *       404:
+ *         description: Paciente não encontrado
+ *       500:
+ *         description: Erro interno do servidor
+ */
 router.delete('/:id', async (req: AuthenticatedRequest, res) => {
     try {
         if (!req.user?.clinicId) {

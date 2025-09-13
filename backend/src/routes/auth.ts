@@ -57,7 +57,7 @@ const registerValidation = [
 
   body('clinic.phone')
     .optional()
-    .matches(/^[\d\s\-\(\)\+]{10,20}$/)
+    .matches(/^[\d\s\-()+]{10,20}$/)
     .withMessage('Telefone da clínica inválido'),
 
   body('clinic.address.street')
@@ -81,6 +81,72 @@ const registerValidation = [
     .withMessage('CEP inválido')
 ];
 
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     LoginRequest:
+ *       type: object
+ *       required:
+ *         - email
+ *         - password
+ *       properties:
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: E-mail do usuário
+ *         password:
+ *           type: string
+ *           description: Senha do usuário
+ *     RegisterRequest:
+ *       type: object
+ *       required:
+ *         - name
+ *         - email
+ *         - password
+ *       properties:
+ *         name:
+ *           type: string
+ *           description: Nome completo do usuário
+ *         email:
+ *           type: string
+ *           format: email
+ *           description: E-mail do usuário
+ *         password:
+ *           type: string
+ *           minLength: 8
+ *           description: Senha (mínimo 8 caracteres, deve conter maiúscula, minúscula, número e símbolo)
+ *         clinic:
+ *           type: object
+ *           properties:
+ *             name:
+ *               type: string
+ *               description: Nome da clínica
+ *             phone:
+ *               type: string
+ *               description: Telefone da clínica
+ *             address:
+ *               type: object
+ *               properties:
+ *                 street:
+ *                   type: string
+ *                   description: Rua
+ *                 number:
+ *                   type: string
+ *                   description: Número
+ *                 neighborhood:
+ *                   type: string
+ *                   description: Bairro
+ *                 city:
+ *                   type: string
+ *                   description: Cidade
+ *                 state:
+ *                   type: string
+ *                   description: Estado
+ *                 zipCode:
+ *                   type: string
+ *                   description: CEP
+ */
 const loginValidation = [
   body('email')
     .isEmail()
@@ -122,6 +188,35 @@ const sanitizeAuthData = (data: any) => {
 };
 
 // Register endpoint
+/**
+ * @swagger
+ * /api/auth/register:
+ *   post:
+ *     summary: Registrar novo usuário
+ *     description: Cria uma nova conta de usuário no sistema
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/RegisterRequest'
+ *     responses:
+ *       201:
+ *         description: Usuário criado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthResponse'
+ *       400:
+ *         description: Dados inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       429:
+ *         description: Muitas tentativas de registro
+ */
 router.post('/register', registerLimiter, registerValidation, async (req: Request, res: Response) => {
   try {
     // Check validation errors
@@ -151,6 +246,37 @@ router.post('/register', registerLimiter, registerValidation, async (req: Reques
 });
 
 // Login endpoint
+/**
+ * @swagger
+ * /api/auth/login:
+ *   post:
+ *     summary: Fazer login
+ *     description: Autentica um usuário e retorna tokens de acesso
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/LoginRequest'
+ *     responses:
+ *       200:
+ *         description: Login realizado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthResponse'
+ *       400:
+ *         description: Dados inválidos
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       401:
+ *         description: Credenciais inválidas
+ *       429:
+ *         description: Muitas tentativas de login
+ */
 router.post('/login', authLimiter, loginValidation, async (req: Request, res: Response) => {
   try {
     // Check validation errors
@@ -186,7 +312,30 @@ router.post('/login', authLimiter, loginValidation, async (req: Request, res: Re
   }
 });
 
-// Get current user profile
+/**
+ * @swagger
+ * /api/auth/me:
+ *   get:
+ *     summary: Obter perfil do usuário atual
+ *     description: Retorna os dados do usuário autenticado
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Perfil do usuário retornado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   $ref: '#/components/schemas/User'
+ *       401:
+ *         description: Não autorizado
+ */
 router.get('/me', authenticate, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const user = await authService.getUserById(req.user!.id);
@@ -210,7 +359,39 @@ router.get('/me', authenticate, async (req: AuthenticatedRequest, res: Response)
   }
 });
 
-// Change password
+/**
+ * @swagger
+ * /api/auth/change-password:
+ *   patch:
+ *     summary: Alterar senha
+ *     description: Altera a senha do usuário autenticado
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - currentPassword
+ *               - newPassword
+ *             properties:
+ *               currentPassword:
+ *                 type: string
+ *                 description: Senha atual
+ *               newPassword:
+ *                 type: string
+ *                 description: Nova senha
+ *     responses:
+ *       200:
+ *         description: Senha alterada com sucesso
+ *       400:
+ *         description: Dados inválidos ou senha atual incorreta
+ *       401:
+ *         description: Não autorizado
+ */
 router.patch('/change-password', authenticate, changePasswordValidation, async (req: AuthenticatedRequest, res: Response) => {
   try {
     const errors = validationResult(req);
@@ -239,10 +420,33 @@ router.patch('/change-password', authenticate, changePasswordValidation, async (
 });
 
 /**
- * Refresh access token using refresh token rotation
- * POST /api/auth/refresh
- * body: { refreshToken }
- * returns: { success: true, data: { accessToken, refreshToken, expiresIn } }
+ * @swagger
+ * /api/auth/refresh:
+ *   post:
+ *     summary: Renovar token de acesso
+ *     description: Renova o token de acesso usando o refresh token
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - refreshToken
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *                 description: Token de refresh
+ *     responses:
+ *       200:
+ *         description: Token renovado com sucesso
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/AuthResponse'
+ *       401:
+ *         description: Token de refresh inválido ou expirado
  */
 router.post('/refresh', async (req: Request, res: Response) => {
   try {
@@ -266,10 +470,28 @@ router.post('/refresh', async (req: Request, res: Response) => {
 });
 
 /**
- * Revoke a specific refresh token (logout from a device)
- * POST /api/auth/logout
- * body: { refreshToken }
- * Auth required.
+ * @swagger
+ * /api/auth/logout:
+ *   post:
+ *     summary: Fazer logout
+ *     description: Revoga um token de refresh específico (logout de um dispositivo)
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               refreshToken:
+ *                 type: string
+ *                 description: Token de refresh a ser revogado
+ *     responses:
+ *       200:
+ *         description: Logout realizado com sucesso
+ *       401:
+ *         description: Não autorizado
  */
 router.post('/logout', authenticate, async (req: AuthenticatedRequest, res: Response) => {
   try {
@@ -294,9 +516,19 @@ router.post('/logout', authenticate, async (req: AuthenticatedRequest, res: Resp
 });
 
 /**
- * Revoke all refresh tokens for the current user (logout from all devices)
- * POST /api/auth/logout-all
- * Auth required.
+ * @swagger
+ * /api/auth/logout-all:
+ *   post:
+ *     summary: Fazer logout de todos os dispositivos
+ *     description: Revoga todos os tokens de refresh do usuário (logout de todos os dispositivos)
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Logout realizado em todos os dispositivos
+ *       401:
+ *         description: Não autorizado
  */
 router.post('/logout-all', authenticate, async (req: AuthenticatedRequest, res: Response) => {
   try {
