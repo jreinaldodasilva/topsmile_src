@@ -1,48 +1,3 @@
-I've reviewed your backend structure document for the TopSmile dental management system. It shows a well-organized Node.js/TypeScript/Express.js API with a solid layered architecture.
-
-For sending the many backend files effectively, here are my recommendations:
-
-## Recommended File Sending Strategy
-
-### 1. **Prioritize by Review Importance**
-Send files in this order of priority:
-- **Core application files** (app.ts, main configs)
-- **Models** (database schemas - these define your data structure)
-- **Services** (business logic - where most bugs/improvements live)
-- **Routes** (API endpoints)
-- **Middleware** (cross-cutting concerns)
-- **Tests** (can help understand expected behavior)
-- **Utils/Types** (supporting files)
-
-### 2. **Group Related Files**
-Send files in logical groups rather than individually:
-- **Group 1**: Core setup (app.ts, configs, main package.json)
-- **Group 2**: Authentication system (auth models, services, routes, middleware)
-- **Group 3**: Patient management (patient models, services, routes)
-- **Group 4**: Appointment system (appointment models, services, routes)
-- **Group 5**: Provider management
-- **Group 6**: Testing files (if you want test review)
-
-### 3. **Use Multiple Messages**
-Since you have many files, plan to send 5-7 groups across multiple messages. I can provide cumulative feedback as we go.
-
-### 4. **Start with Most Critical**
-If you have specific concerns or areas where you suspect issues, prioritize those files first.
-
-## What to Send First
-
-I recommend starting with **Group 1** (Core setup):
-- `backend/src/app.ts`
-- `backend/package.json`
-- `backend/src/config/database.ts`
-- `backend/tsconfig.json`
-
-This will give me the foundation to understand your setup, dependencies, and overall architecture approach.
-
-Would you like to start with these core files, or do you have a specific area of concern you'd like me to focus on first?
-
-
-
 I've reviewed the backend structure document you provided. The TopSmile dental management system has a well-organized, layered architecture with comprehensive functionality for appointment management, authentication, and patient portal features.
 
 For sending the backend files effectively, here are my recommendations:
@@ -122,3 +77,10 @@ Group 1 - Core Foundation:
 - `tsconfig.json` /topsmile/backend/tsconfig.json
 - `src/app.ts`  /topsmile/backend/src/app.ts
 - `src/config/database.ts` /topsmile/backend/src/config/database.ts
+
+**Group 2 - Authentication & Security:**
+- `src/middleware/auth.ts` /topsmile/backend/src/middleware/auth.ts
+- `src/middleware/roleBasedAccess.ts` /topsmile/backend/src/middleware/roleBasedAccess.ts
+- `src/services/authService.ts` /topsmile/backend/src/services/authService.ts
+- `src/models/User.ts` /topsmile/backend/src/models/User.ts
+- `src/models/RefreshToken.ts` /topsmile/backend/src/models/RefreshToken.ts
