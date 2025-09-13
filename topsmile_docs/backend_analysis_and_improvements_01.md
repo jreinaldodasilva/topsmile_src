@@ -84,3 +84,11 @@ Group 1 - Core Foundation:
 - `src/services/authService.ts` /topsmile/backend/src/services/authService.ts
 - `src/models/User.ts` /topsmile/backend/src/models/User.ts
 - `src/models/RefreshToken.ts` /topsmile/backend/src/models/RefreshToken.ts
+
+**Group 3 - Patient Management**
+ `src/models/Patient.ts` /topsmile/backend/src/models/Patient.ts
+- `src/models/PatientUser.ts` /topsmile/backend/src/models/PatientUser.ts
+- `src/services/patientService.ts` /topsmile/backend/src/services/patientService.ts
+- `src/routes/patients.ts` /topsmile/backend/src/routes/patients.ts
+- `src/middleware/patientAuth.ts` /topsmile/backend/src/middleware/patientAuth.ts
+
