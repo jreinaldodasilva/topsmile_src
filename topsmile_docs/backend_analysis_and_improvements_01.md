@@ -72,7 +72,7 @@ Based on the structure, I'll be looking for:
 
 Start with **Group 1 (Core Foundation)** and I'll provide detailed feedback on each submission before moving to the next group. This approach will help identify any foundational issues early and ensure the review builds logically.
 
-Group 1 - Core Foundation:
+**Group 1 - Core Foundation:**
 - `package.json`  /topsmile/backend/package.json
 - `tsconfig.json` /topsmile/backend/tsconfig.json
 - `src/app.ts`  /topsmile/backend/src/app.ts
@@ -93,10 +93,13 @@ Group 1 - Core Foundation:
 - `src/middleware/patientAuth.ts` /topsmile/backend/src/middleware/patientAuth.ts
 
 **Group 4 - Appointment System:**
-src/models/Appointment.ts /topsmile/backend/src/models/Appointment.ts
-src/models/AppointmentType.ts /topsmile/backend/src/models/AppointmentType.ts
-src/services/appointmentService.ts /topsmile/backend/src/services/appointmentService.ts
-src/services/schedulingService.ts /topsmile/backend/src/services/schedulingService.ts
-src/routes/appointments.ts /topsmile/backend/src/routes/appointments.ts
+`src/models/Appointment.ts` /topsmile/backend/src/models/Appointment.ts
+`src/models/AppointmentType.ts` /topsmile/backend/src/models/AppointmentType.ts
+`src/services/appointmentService.ts` /topsmile/backend/src/services/appointmentService.ts
+`src/services/schedulingService.ts` /topsmile/backend/src/services/schedulingService.ts
+`src/routes/appointments.ts` /topsmile/backend/src/routes/appointments.ts
 
-**Group 5 - Supporting Components:**
+**Group 5 - Final Components & Testing:**
+`src/models/Provider.ts` /topsmile/backend/src/models/Provider.ts
+`src/services/providerService.ts` /topsmile/backend/src/services/providerService.ts
+`src/routes/providers.ts` /topsmile/backend/src/routes/providers.ts
