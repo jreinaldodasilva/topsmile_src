@@ -92,3 +92,11 @@ Group 1 - Core Foundation:
 - `src/routes/patients.ts` /topsmile/backend/src/routes/patients.ts
 - `src/middleware/patientAuth.ts` /topsmile/backend/src/middleware/patientAuth.ts
 
+**Group 4 - Appointment System:**
+src/models/Appointment.ts /topsmile/backend/src/models/Appointment.ts
+src/models/AppointmentType.ts /topsmile/backend/src/models/AppointmentType.ts
+src/services/appointmentService.ts /topsmile/backend/src/services/appointmentService.ts
+src/services/schedulingService.ts /topsmile/backend/src/services/schedulingService.ts
+src/routes/appointments.ts /topsmile/backend/src/routes/appointments.ts
+
+**Group 5 - Supporting Components:**
